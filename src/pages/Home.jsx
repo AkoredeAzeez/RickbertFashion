@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchProducts } from "../lib/api.js";
+import { fetchProducts } from "../lib/api";
 import { useCart } from "../state/CartContext";
 
 export default function Home() {
@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <div>
       <div className="mb-8 rounded-2xl p-10 bg-gradient-to-r from-amber-100 to-yellow-50">
-        <h1 className="text-3xl font-bold mb-2">Shop Nigerian Fashion</h1>
+        <h1 className="text-3xl font-bold mb-2">RICKBERT-FASHION</h1>
         <p className="text-gray-600">Beautiful styles, fast delivery, secure Paystack checkout.</p>
       </div>
 
