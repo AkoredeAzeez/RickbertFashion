@@ -3,12 +3,22 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import axios from "axios";
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
+
+// ====== Fix: resolve __dirname in ES Modules ======
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 🔹 serve uploaded images (absolute path safer than "uploads/")
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const { PORT = 4000, MONGODB_URI, PAYSTACK_SECRET_KEY } = process.env;
 
@@ -29,7 +39,7 @@ const productSchema = new mongoose.Schema(
     sizes: [String],
     colors: [String],
     stock: Number,
-    inStock: Boolean
+    inStock: Boolean,
   },
   { timestamps: true }
 );
@@ -40,25 +50,37 @@ const orderSchema = new mongoose.Schema(
       {
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
         qty: Number,
-        price: Number // snapshot at purchase time
-      }
+        price: Number, // snapshot at purchase time
+      },
     ],
     customer: {
       name: String,
       email: String,
       phone: String,
-      address: String
+      address: String,
     },
-    amount: Number, // total in Naira
+    amount: Number,
     status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
     gateway: { type: String, default: "paystack" },
-    reference: String
+    reference: String,
   },
   { timestamps: true }
 );
 
 const Product = mongoose.model("Product", productSchema);
 const Order = mongoose.model("Order", orderSchema);
+
+// ====== Multer Config ======
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, "uploads")),
+  filename: (req, file, cb) =>
+    cb(null, Date.now() + "-" + Math.round(Math.random() * 1e9) + path.extname(file.originalname)),
+});
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) =>
+    file.mimetype.startsWith("image/") ? cb(null, true) : cb(new Error("Only images allowed"), false),
+});
 
 // ====== Health ======
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
@@ -75,128 +97,32 @@ app.get("/api/products/:id", async (req, res) => {
   res.json(p);
 });
 
-// ====== Seed (demo only) ======
-app.post("/api/seed", async (_req, res) => {
-  const count = await Product.countDocuments();
-  if (count > 0) return res.json({ message: "Already seeded" });
-
-  const demo = [
-    {
-      name: "Ankara Midi Dress",
-      description: "Vibrant Ankara print, perfect for outings.",
-      price: 18000,
-      images: ["https://picsum.photos/seed/ankara/600/600"],
-      category: "Women",
-      brand: "NaijaStyle",
-      sizes: ["S", "M", "L"],
-      colors: ["red", "yellow"],
-      stock: 20,
-      inStock: true
-    },
-    {
-      name: "Agbada Set",
-      description: "Classic agbada with fine embroidery.",
-      price: 75000,
-      images: ["https://picsum.photos/seed/agbada/600/600"],
-      category: "Men",
-      brand: "RoyalThreads",
-      sizes: ["M", "L", "XL"],
-      colors: ["blue"],
-      stock: 8,
-      inStock: true
-    },
-    {
-      name: "Sneakers - White",
-      description: "Clean everyday sneakers.",
-      price: 23000,
-      images: ["https://picsum.photos/seed/sneakers/600/600"],
-      category: "Footwear",
-      brand: "StreetFlex",
-      sizes: ["41", "42", "43", "44"],
-      colors: ["white"],
-      stock: 15,
-      inStock: true
-    }
-  ];
-
-  await Product.insertMany(demo);
-  res.json({ message: "Seeded", count: demo.length });
-});
-
-// ====== Checkout (Paystack Sandbox) ======
-app.post("/api/checkout/paystack/initiate", async (req, res) => {
+// 🔹 Upload product with image
+app.post("/api/products", upload.single("image"), async (req, res) => {
   try {
-    const { items, customer } = req.body;
-    if (!Array.isArray(items) || !customer?.email)
-      return res.status(400).json({ message: "Invalid payload" });
+    const { name, description, price, category, brand, sizes, colors, stock } = req.body;
 
-    // Calculate total from products to avoid tampering
-    const ids = items.map((i) => i.productId);
-    const dbProducts = await Product.find({ _id: { $in: ids } });
-    const map = Object.fromEntries(dbProducts.map((p) => [String(p._id), p]));
-    const normalized = items.map((i) => ({
-      product: i.productId,
-      qty: i.qty,
-      price: map[i.productId]?.price ?? 0
-    }));
-    const amount = normalized.reduce((sum, i) => sum + i.qty * i.price, 0);
+    // Absolute URL for frontend
+    const imageUrl = req.file ? `http://localhost:${PORT}/uploads/${req.file.filename}` : null;
 
-    // Create pending order
-    const order = await Order.create({
-      items: normalized,
-      customer,
-      amount,
-      status: "pending",
-      gateway: "paystack"
+    const product = new Product({
+      name,
+      description,
+      price,
+      category,
+      brand,
+      sizes: sizes ? sizes.split(",") : [],
+      colors: colors ? colors.split(",") : [],
+      stock,
+      inStock: stock > 0,
+      images: imageUrl ? [imageUrl] : [],
     });
 
-    // Init with Paystack (amount in kobo)
-    const initRes = await axios.post(
-      "https://api.paystack.co/transaction/initialize",
-      {
-        email: customer.email,
-        amount: amount * 100,
-        metadata: { orderId: String(order._id) },
-        callback_url: `${process.env.CLIENT_URL}/payment/callback`
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-    const { authorization_url, reference } = initRes.data.data;
-    order.reference = reference;
-    await order.save();
-
-    res.json({ authorization_url, reference, orderId: order._id });
-  } catch (e) {
-    console.error(e.response?.data || e.message);
-    res.status(500).json({ message: "Payment init failed" });
-  }
-});
-
-app.get("/api/checkout/paystack/verify/:reference", async (req, res) => {
-  try {
-    const { reference } = req.params;
-    const verifyRes = await axios.get(
-      `https://api.paystack.co/transaction/verify/${reference}`,
-      { headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` } }
-    );
-
-    const status = verifyRes.data.data.status; // 'success' | 'failed' | 'abandoned'
-    const order = await Order.findOne({ reference });
-    if (!order) return res.status(404).json({ message: "Order not found" });
-
-    order.status = status === "success" ? "paid" : status === "failed" ? "failed" : "pending";
-    await order.save();
-
-    res.json({ status: order.status, orderId: order._id });
-  } catch (e) {
-    console.error(e.response?.data || e.message);
-    res.status(500).json({ message: "Verification failed" });
+    await product.save();
+    res.status(201).json(product);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Product upload failed" });
   }
 });
 
