@@ -9,3 +9,7 @@ export const paystackInitiate = (payload) =>
 
 export const paystackVerify = (reference) =>
   api.get(`/api/checkout/paystack/verify/${reference}`).then((r) => r.data);
+export const uploadProduct = (formData) =>
+  api.post("/api/products", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }).then((r) => r.data);
