@@ -15,7 +15,11 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const { PORT = 4000, MONGODB_URI, PAYSTACK_SECRET_KEY, CLIENT_URL } = process.env;
+const PORT = process.env.PORT || 4000;
+const MONGODB_URI = process.env.MONGODB_URI;
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const CLIENT_URL = process.env.CLIENT_URL;
+
 
 // ===== Middleware =====
 app.use(cors({ origin: CLIENT_URL, credentials: true }));
