@@ -17,10 +17,12 @@ const __dirname = path.dirname(__filename);
 
 const { PORT = 4000, MONGODB_URI, PAYSTACK_SECRET_KEY, CLIENT_URL } = process.env;
 
+// ===== Middleware =====
 app.use(cors({ origin: CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// ===== MongoDB Connection =====
 mongoose
   .connect(MONGODB_URI, { dbName: "ng_ecommerce_demo" })
   .then(() => console.log("✅ MongoDB connected"))
@@ -82,10 +84,10 @@ const upload = multer({
     file.mimetype.startsWith("image/") ? cb(null, true) : cb(new Error("Only images allowed"), false),
 });
 
-// ===== Health =====
+// ===== Health Check =====
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
-// ===== Products =====
+// ===== Products Routes =====
 app.get("/api/products", async (_req, res) => {
   const products = await Product.find().sort({ createdAt: -1 });
   res.json(products);
@@ -97,7 +99,6 @@ app.get("/api/products/:id", async (req, res) => {
   res.json(p);
 });
 
-// ===== Delete Product =====
 app.delete("/api/products/:id", async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
@@ -119,11 +120,10 @@ app.delete("/api/products/:id", async (req, res) => {
   }
 });
 
-// ===== Upload Product =====
 app.post("/api/products", upload.single("image"), async (req, res) => {
   try {
     const { name, description, price, category, brand, sizes, colors, stock } = req.body;
-    const imageUrl = req.file ? `http://localhost:${PORT}/uploads/${req.file.filename}` : null;
+    const imageUrl = req.file ? `${CLIENT_URL}/uploads/${req.file.filename}` : null;
 
     const product = new Product({
       name,
@@ -146,21 +146,20 @@ app.post("/api/products", upload.single("image"), async (req, res) => {
   }
 });
 
-// ===== Paystack Initiate with callback_url =====
+// ===== Paystack Payment =====
 app.post("/api/checkout/paystack/initiate", async (req, res) => {
   try {
     const { amount, email } = req.body;
     if (!amount || !email) return res.status(400).json({ message: "Amount and email are required" });
 
-    // 🔹 Redirect URL after successful payment
-    const redirectUrl = `${CLIENT_URL}/payment-success`;
+    const redirectUrl = `${CLIENT_URL}/payment-success`; // frontend success page
 
     const response = await axios.post(
       "https://api.paystack.co/transaction/initialize",
       { 
         amount: amount, 
         email, 
-        callback_url: `${CLIENT_URL}/payment-success`,
+        callback_url: redirectUrl 
       },
       {
         headers: {
@@ -172,7 +171,6 @@ app.post("/api/checkout/paystack/initiate", async (req, res) => {
 
     const { reference, authorization_url } = response.data.data;
 
-    // Save order with pending status
     await Order.create({ ...req.body, reference, status: "pending" });
 
     res.json({ reference, authorization_url });
@@ -182,7 +180,6 @@ app.post("/api/checkout/paystack/initiate", async (req, res) => {
   }
 });
 
-// ===== Paystack Verify =====
 app.get("/api/checkout/paystack/verify/:reference", async (req, res) => {
   try {
     const { reference } = req.params;
@@ -221,4 +218,5 @@ app.post("/api/checkout/save-order", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`🚀 API running on http://localhost:${PORT}`));
+// ===== Start Server =====
+app.listen(PORT, "0.0.0.0", () => console.log(`🚀 API running on port ${PORT}`));
