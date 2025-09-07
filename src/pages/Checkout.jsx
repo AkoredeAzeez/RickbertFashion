@@ -1,53 +1,98 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import { useCart } from "../state/CartContext";
-import { paystackInitiate } from "../lib/api";
+import { useNavigate } from "react-router-dom";
+import "./Checkout.css";
 
-export default function Checkout() {
+const Checkout = () => {
   const { cart, total } = useCart();
-  const [form, setForm] = useState({ name: "", email: "", phone: "", address: "" });
-  const disabled = !cart.length || !form.email || !form.name;
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
 
-  const onPay = async () => {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleCheckout = async () => {
+    if (!cart.length || !formData.name || !formData.email) return;
+
     try {
-      const payload = {
-        items: cart.map((c) => ({ productId: c._id, qty: c.qty })),
-        customer: form
-      };
-      const res = await paystackInitiate(payload);
-      window.location.href = res.authorization_url; // redirect to Paystack
-    } catch (e) {
-      alert("Payment init failed. Check console.");
-      console.error(e);
+      // 🔹 Step 1: Initiate Paystack payment
+      const totalAmountKobo = total * 100; // Paystack requires kobo
+      const response = await axios.post(`${BACKEND_URL}/api/checkout/paystack/initiate`, {
+        ...formData,
+        amount: totalAmountKobo,
+        cart,
+      });
+
+      if (response.data && response.data.authorization_url && response.data.reference) {
+        // 🔹 Step 2: Construct your redirect page
+        const successPageUrl = `/payment-success?reference=${response.data.reference}`;
+
+        // 🔹 Step 3: Open Paystack in the same tab
+        window.location.href = response.data.authorization_url;
+
+        // Note: After payment, Paystack needs to redirect to the success page URL
+        // You should configure the Paystack "callback_url" on the backend when initializing transaction
+      }
+    } catch (err) {
+      console.error("Checkout error:", err.response?.data || err.message);
+      alert("Payment initiation failed. Check console.");
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow">
-      <h1 className="text-xl font-bold mb-4">Checkout</h1>
+    <div className="checkout">
+      <h2>Checkout</h2>
 
-      <div className="grid gap-3">
-        {["name", "email", "phone", "address"].map((k) => (
-          <input
-            key={k}
-            placeholder={k[0].toUpperCase() + k.slice(1)}
-            value={form[k]}
-            onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-            className="border rounded px-3 py-2"
-          />
-        ))}
+      <div className="form">
+        <input
+          type="text"
+          name="name"
+          placeholder="Full Name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email Address"
+          value={formData.email}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="phone"
+          placeholder="Phone Number"
+          value={formData.phone}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="address"
+          placeholder="Delivery Address"
+          value={formData.address}
+          onChange={handleChange}
+        />
       </div>
 
-      <div className="mt-4 text-lg font-semibold">Total: ₦{total.toLocaleString()}</div>
+      <h3>Total: ₦{total}</h3>
 
       <button
-        disabled={disabled}
-        onClick={onPay}
-        className={`mt-6 px-5 py-3 rounded-xl text-white ${disabled ? "bg-gray-400" : "bg-black"}`}
+        onClick={handleCheckout}
+        disabled={!cart.length || !formData.email || !formData.name}
       >
-        Pay with Paystack (Sandbox)
+        Pay with Paystack
       </button>
-
-      <p className="text-sm text-gray-500 mt-3">Use Paystack test cards on the payment page.</p>
     </div>
   );
-}
+};
+
+export default Checkout;

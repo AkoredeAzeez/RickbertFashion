@@ -1,0 +1,30 @@
+.payment-success {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  text-align: center;
+  background: #fef9f3;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: -400px;
+  background: #4caf50;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 10px;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  animation: slideIn 0.5s forwards, slideOut 0.5s 3s forwards;
+}
+
+@keyframes slideIn {
+  to { right: 20px; }
+}
+
+@keyframes slideOut {
+  to { right: -400px; }
+}
