@@ -4,9 +4,8 @@ import ProductDetail from "./pages/ProductDetail.jsx";
 import Upload from "./pages/Upload.jsx";
 import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
-import PaymentCallback from "./pages/PaymentCallback.jsx";
+import PaymentSuccess from "./pages/PaymentSuccess.jsx"; 
 import { CartProvider } from "./state/CartContext.jsx";
-
 
 export default function App() {
   return (
@@ -30,13 +29,13 @@ export default function App() {
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/payment/callback" element={<PaymentCallback />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} /> {/* ✅ added */}
             <Route path="/upload" element={<Upload />} />
           </Routes>
         </main>
 
         <footer className="py-10 text-center text-sm text-gray-500">
-         RICKBERTFASHION
+          RICKBERTFASHION
         </footer>
       </div>
     </CartProvider>
