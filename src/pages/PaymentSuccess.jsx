@@ -13,7 +13,7 @@ const PaymentSuccess = () => {
 
   // Get reference from URL
   const searchParams = new URLSearchParams(location.search);
-  const reference = searchParams.get("reference") || searchParams.get("trxref");
+const reference = searchParams.get("reference") || searchParams.get("trxref");
 
   useEffect(() => {
     if (!reference) {
