@@ -25,22 +25,14 @@ export function CartProvider({ children }) {
   };
 
   const removeItem = (id) => setCart((prev) => prev.filter((i) => i._id !== id));
-
   const updateQty = (id, qty) =>
     setCart((prev) => prev.map((i) => (i._id === id ? { ...i, qty } : i)));
-
   const clearCart = () => setCart([]);
 
-  // ✅ compute total once with useMemo
   const total = useMemo(() => cart.reduce((s, i) => s + i.price * i.qty, 0), [cart]);
 
-  // ✅ add helper function so you can call it
-  const getTotalPrice = () => total;
-
   return (
-    <CartCtx.Provider
-      value={{ cart, addItem, removeItem, updateQty, clearCart, total, getTotalPrice }}
-    >
+    <CartCtx.Provider value={{ cart, addItem, removeItem, updateQty, total, clearCart }}>
       {children}
     </CartCtx.Provider>
   );

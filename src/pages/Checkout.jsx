@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useCart } from "../state/CartContext";
 import { useNavigate } from "react-router-dom";
 import "./Checkout.css";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 const Checkout = () => {
-  const { cart, total } = useCart();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -14,33 +14,38 @@ const Checkout = () => {
     address: "",
   });
 
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  const [cartItems, setCartItems] = useState([]);
+  const [total, setTotal] = useState(0);
+
+  // Fetch cart from backend or localStorage if needed
+  React.useEffect(() => {
+    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCartItems(storedCart);
+    const sum = storedCart.reduce((acc, item) => acc + item.price * item.qty, 0);
+    setTotal(sum);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleCheckout = async () => {
-    if (!cart.length || !formData.name || !formData.email) return;
+    if (!cartItems.length || !formData.name || !formData.email) return;
 
     try {
-      // 🔹 Step 1: Initiate Paystack payment
       const totalAmountKobo = total * 100; // Paystack requires kobo
       const response = await axios.post(`${BACKEND_URL}/api/checkout/paystack/initiate`, {
         ...formData,
         amount: totalAmountKobo,
-        cart,
+        cart: cartItems,
       });
 
       if (response.data && response.data.authorization_url && response.data.reference) {
-        // 🔹 Step 2: Construct your redirect page
-        const successPageUrl = `/payment-success?reference=${response.data.reference}`;
-
-        // 🔹 Step 3: Open Paystack in the same tab
+        // Redirect to Paystack in the same tab
         window.location.href = response.data.authorization_url;
 
-        // Note: After payment, Paystack needs to redirect to the success page URL
-        // You should configure the Paystack "callback_url" on the backend when initializing transaction
+        // After payment, Paystack should redirect back to:
+        // /payment-success?reference=xxx
       }
     } catch (err) {
       console.error("Checkout error:", err.response?.data || err.message);
@@ -87,7 +92,7 @@ const Checkout = () => {
 
       <button
         onClick={handleCheckout}
-        disabled={!cart.length || !formData.email || !formData.name}
+        disabled={!cartItems.length || !formData.email || !formData.name}
       >
         Pay with Paystack
       </button>
