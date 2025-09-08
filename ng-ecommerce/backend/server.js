@@ -2,7 +2,6 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import axios from "axios";
 import multer from "multer";
 import path from "path";
@@ -293,7 +292,6 @@ app.get("/api/orders", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 });
-
 
 // ===== Save Order to Google Sheets =====
 app.post("/api/checkout/save-order", async (req, res) => {
