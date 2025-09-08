@@ -9,17 +9,19 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 
+import {
+  BACKEND_URL,
+  CLIENT_URL,
+  MONGODB_URI,
+  PAYSTACK_SECRET_KEY,
+  PORT,
+} from "./constants";
+
 dotenv.config();
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const PORT = process.env.PORT || 4000;
-const MONGODB_URI = process.env.MONGODB_URI;
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-const CLIENT_URL = process.env.CLIENT_URL;
-
 
 // ===== Middleware =====
 app.use(cors({ origin: CLIENT_URL, credentials: true }));
@@ -65,7 +67,11 @@ const orderSchema = new mongoose.Schema(
       address: String,
     },
     amount: Number,
-    status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
+    status: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
     gateway: { type: String, default: "paystack" },
     reference: String,
   },
@@ -79,13 +85,21 @@ const Order = mongoose.model("Order", orderSchema);
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, "uploads")),
   filename: (req, file, cb) =>
-    cb(null, Date.now() + "-" + Math.round(Math.random() * 1e9) + path.extname(file.originalname)),
+    cb(
+      null,
+      Date.now() +
+        "-" +
+        Math.round(Math.random() * 1e9) +
+        path.extname(file.originalname)
+    ),
 });
 
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) =>
-    file.mimetype.startsWith("image/") ? cb(null, true) : cb(new Error("Only images allowed"), false),
+    file.mimetype.startsWith("image/")
+      ? cb(null, true)
+      : cb(new Error("Only images allowed"), false),
 });
 
 // ===== Health Check =====
@@ -123,7 +137,10 @@ app.delete("/api/products/:id", async (req, res) => {
           }
         }
 
-        const fullPath = path.join(process.cwd(), relativePath.replace(/^\//, ""));
+        const fullPath = path.join(
+          process.cwd(),
+          relativePath.replace(/^\//, "")
+        );
         console.log("🗑️ Attempting to delete:", fullPath);
 
         fs.unlink(fullPath, (err) => {
@@ -145,12 +162,14 @@ app.delete("/api/products/:id", async (req, res) => {
   }
 });
 
-
 app.post("/api/products", upload.single("image"), async (req, res) => {
   try {
-    const { name, description, price, category, brand, sizes, colors, stock } = req.body;
+    const { name, description, price, category, brand, sizes, colors, stock } =
+      req.body;
 
-    const imageUrl = req.file ? `http://localhost:${PORT}/uploads/${req.file.filename}` : null;
+    const imageUrl = req.file
+      ? `${BACKEND_URL}/uploads/${req.file.filename}`
+      : null;
     const product = new Product({
       name,
       description,
@@ -199,7 +218,7 @@ app.post("/api/checkout/paystack/initiate", async (req, res) => {
     // 🔹 Step 2: Save order to MongoDB with cart
     const order = new Order({
       items: cart.map((item) => ({
-        product: item._id,   // assumes cart item has _id from MongoDB
+        product: item._id, // assumes cart item has _id from MongoDB
         qty: item.qty,
         price: item.price,
       })),
@@ -214,20 +233,25 @@ app.post("/api/checkout/paystack/initiate", async (req, res) => {
     // 🔹 Step 3: Send Paystack authorization URL back
     res.json({ reference, authorization_url });
   } catch (err) {
-    console.error("Paystack initiate error:", err.response?.data || err.message);
+    console.error(
+      "Paystack initiate error:",
+      err.response?.data || err.message
+    );
     res.status(500).json({ message: "Payment initiation failed" });
   }
 });
-
 
 app.get("/api/checkout/paystack/verify/:reference", async (req, res) => {
   try {
     const { reference } = req.params;
 
     // 🔹 Verify with Paystack
-    const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
-      headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
-    });
+    const response = await axios.get(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
+      }
+    );
 
     const data = response.data.data;
 
@@ -263,10 +287,14 @@ app.get("/api/checkout/paystack/verify/:reference", async (req, res) => {
 app.post("/api/checkout/save-order", async (req, res) => {
   try {
     const { name, email, phone, address, total, cart } = req.body;
-    await axios.post(
-      "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec",
-      { name, email, phone, address, total, cart }
-    );
+    await axios.post("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec", {
+      name,
+      email,
+      phone,
+      address,
+      total,
+      cart,
+    });
     res.json({ success: true });
   } catch (err) {
     console.error("Google Sheets error:", err.message);
@@ -275,4 +303,6 @@ app.post("/api/checkout/save-order", async (req, res) => {
 });
 
 // ===== Start Server =====
-app.listen(PORT, "0.0.0.0", () => console.log(`🚀 API running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () =>
+  console.log(`🚀 API running on port ${PORT}`)
+);

@@ -3,13 +3,21 @@ import Product from "../models/Product.js"; // Assuming you have a Product model
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { BACKEND_URL } from "../constants.js";
 
 const router = express.Router();
 
 // Multer setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + Math.round(Math.random() * 1e9) + path.extname(file.originalname)),
+  filename: (req, file, cb) =>
+    cb(
+      null,
+      Date.now() +
+        "-" +
+        Math.round(Math.random() * 1e9) +
+        path.extname(file.originalname)
+    ),
 });
 const upload = multer({ storage });
 
@@ -34,10 +42,11 @@ router.delete("/:id", async (req, res) => {
 
     // Delete associated images
     if (product.images && product.images.length) {
-      product.images.forEach(imgPath => {
+      product.images.forEach((imgPath) => {
         const fullPath = path.join(process.cwd(), imgPath.replace(/^\//, ""));
-        fs.unlink(fullPath, err => {
-          if (err) console.error("Failed to delete image:", fullPath, err.message);
+        fs.unlink(fullPath, (err) => {
+          if (err)
+            console.error("Failed to delete image:", fullPath, err.message);
         });
       });
     }
@@ -52,8 +61,11 @@ router.delete("/:id", async (req, res) => {
 // POST upload product
 router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const { name, description, price, category, brand, sizes, colors, stock } = req.body;
-    const imageUrl = req.file ? `http://localhost:4000/uploads/${req.file.filename}` : null;
+    const { name, description, price, category, brand, sizes, colors, stock } =
+      req.body;
+    const imageUrl = req.file
+      ? `${BACKEND_URL}/uploads/${req.file.filename}`
+      : null;
 
     const product = new Product({
       name,
