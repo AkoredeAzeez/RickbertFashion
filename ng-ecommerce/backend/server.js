@@ -110,25 +110,47 @@ app.delete("/api/products/:id", async (req, res) => {
 
     if (product.images && product.images.length > 0) {
       product.images.forEach((imgPath) => {
-        const fullPath = path.join(process.cwd(), imgPath.replace(/^\//, ""));
+        // If imgPath is a full URL, extract only the "/uploads/..." part
+        let relativePath = imgPath;
+
+        if (imgPath.startsWith("http")) {
+          try {
+            const urlObj = new URL(imgPath);
+            relativePath = urlObj.pathname; // "/uploads/..."
+          } catch (err) {
+            console.error("⚠️ Invalid URL in product.images:", imgPath);
+            return; // skip this one
+          }
+        }
+
+        const fullPath = path.join(process.cwd(), relativePath.replace(/^\//, ""));
+        console.log("🗑️ Attempting to delete:", fullPath);
+
         fs.unlink(fullPath, (err) => {
-          if (err) console.error("⚠️ Failed to delete image:", fullPath, err.message);
+          if (err) {
+            console.error("⚠️ Failed to delete image:", fullPath, err.message);
+          } else {
+            console.log("✅ Successfully deleted:", fullPath);
+          }
         });
       });
+    } else {
+      console.log("ℹ️ No images to delete for this product.");
     }
 
     res.json({ message: "✅ Product and images deleted", product });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Delete route error:", err);
     res.status(500).json({ message: "Failed to delete product" });
   }
 });
 
+
 app.post("/api/products", upload.single("image"), async (req, res) => {
   try {
     const { name, description, price, category, brand, sizes, colors, stock } = req.body;
-    const imageUrl = req.file ? `${CLIENT_URL}/uploads/${req.file.filename}` : null;
 
+    const imageUrl = req.file ? `http://localhost:${PORT}/uploads/${req.file.filename}` : null;
     const product = new Product({
       name,
       description,
