@@ -175,18 +175,17 @@ app.post("/api/products", upload.single("image"), async (req, res) => {
 // ===== Paystack Payment =====
 app.post("/api/checkout/paystack/initiate", async (req, res) => {
   try {
-    const { amount, email } = req.body;
-    if (!amount || !email) return res.status(400).json({ message: "Amount and email are required" });
+    const { amount, email, name, phone, address, cart } = req.body;
+    if (!amount || !email) {
+      return res.status(400).json({ message: "Amount and email are required" });
+    }
 
     const redirectUrl = `${CLIENT_URL}/payment-success`; // frontend success page
 
+    // 🔹 Step 1: Initialize Paystack transaction
     const response = await axios.post(
       "https://api.paystack.co/transaction/initialize",
-      { 
-        amount: amount, 
-        email, 
-        callback_url: redirectUrl 
-      },
+      { amount, email, callback_url: redirectUrl },
       {
         headers: {
           Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
@@ -197,8 +196,22 @@ app.post("/api/checkout/paystack/initiate", async (req, res) => {
 
     const { reference, authorization_url } = response.data.data;
 
-    await Order.create({ ...req.body, reference, status: "pending" });
+    // 🔹 Step 2: Save order to MongoDB with cart
+    const order = new Order({
+      items: cart.map((item) => ({
+        product: item._id,   // assumes cart item has _id from MongoDB
+        qty: item.qty,
+        price: item.price,
+      })),
+      customer: { name, email, phone, address },
+      amount: amount / 100, // convert back to naira
+      status: "pending",
+      reference,
+    });
 
+    await order.save();
+
+    // 🔹 Step 3: Send Paystack authorization URL back
     res.json({ reference, authorization_url });
   } catch (err) {
     console.error("Paystack initiate error:", err.response?.data || err.message);
@@ -206,20 +219,37 @@ app.post("/api/checkout/paystack/initiate", async (req, res) => {
   }
 });
 
+
 app.get("/api/checkout/paystack/verify/:reference", async (req, res) => {
   try {
     const { reference } = req.params;
 
+    // 🔹 Verify with Paystack
     const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
       headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
     });
 
     const data = response.data.data;
-    const order = await Order.findOne({ reference });
+
+    // 🔹 Find the matching order in DB and populate products
+    let order = await Order.findOne({ reference }).populate("items.product");
 
     if (order) {
       order.status = data.status === "success" ? "paid" : "failed";
       await order.save();
+    } else {
+      // 🔹 Fallback: construct minimal order if DB doesn’t have one
+      order = {
+        customer: {
+          name: data.customer.first_name + " " + data.customer.last_name,
+          email: data.customer.email,
+          phone: data.customer.phone,
+          address: "",
+        },
+        items: [],
+        amount: data.amount / 100, // convert from kobo
+        status: data.status,
+      };
     }
 
     res.json({ status: data.status, order });
