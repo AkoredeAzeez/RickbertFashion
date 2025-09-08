@@ -6,6 +6,7 @@ import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import PaymentSuccess from "./pages/PaymentSuccess.jsx"; 
 import { CartProvider } from "./state/CartContext.jsx";
+import Orders from "./pages/Orders.jsx";
 
 export default function App() {
   return (
@@ -18,7 +19,8 @@ export default function App() {
               <Link to="/" className="hover:underline">Shop</Link>
               <Link to="/cart" className="hover:underline">Cart</Link>
               <Link to="/checkout" className="hover:underline">Checkout</Link>
-              <Link to="/upload" className="px-3">Upload</Link>
+              <Link to="/upload" className="hover:underline">Upload</Link>
+              <Link to="/orders" className="hover:underline">Orders</Link>
             </div>
           </div>
         </nav>
@@ -29,8 +31,9 @@ export default function App() {
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} /> {/* ✅ added */}
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/upload" element={<Upload />} />
+            <Route path="/orders" element={<Orders />} /> {/* ✅ FIXED */}
           </Routes>
         </main>
 
