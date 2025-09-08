@@ -282,6 +282,20 @@ app.get("/api/checkout/paystack/verify/:reference", async (req, res) => {
     res.status(500).json({ message: "Paystack verification failed" });
   }
 });
+// ===== Orders Routes =====
+app.get("/api/orders", async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("items.product", "name price") // only return name + price of products
+      .sort({ createdAt: -1 }); // newest first
+
+    res.json(orders);
+  } catch (err) {
+    console.error("Failed to fetch orders:", err.message);
+    res.status(500).json({ message: "Failed to fetch orders" });
+  }
+});
+
 
 // ===== Save Order to Google Sheets =====
 app.post("/api/checkout/save-order", async (req, res) => {
