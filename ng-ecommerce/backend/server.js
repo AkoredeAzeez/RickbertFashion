@@ -15,7 +15,7 @@ import {
   MONGODB_URI,
   PAYSTACK_SECRET_KEY,
   PORT,
-} from "./constants";
+} from "./constants.js";
 
 dotenv.config();
 
