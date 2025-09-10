@@ -7,7 +7,7 @@ import Checkout from "./pages/Checkout.jsx";
 import PaymentSuccess from "./pages/PaymentSuccess.jsx"; 
 import { CartProvider } from "./state/CartContext.jsx";
 import Orders from "./pages/Orders.jsx";
-
+import LandingPage from "./pages/LandingPage.jsx";
 export default function App() {
   return (
     <CartProvider>
@@ -16,7 +16,7 @@ export default function App() {
           <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
             <Link to="/" className="text-xl font-bold">RICKBERT-FASHION</Link>
             <div className="space-x-4">
-              <Link to="/" className="hover:underline">Shop</Link>
+              <Link to="/home" className="hover:underline">Shop</Link>
               <Link to="/cart" className="hover:underline">Cart</Link>
               <Link to="/checkout" className="hover:underline">Checkout</Link>
               <Link to="/upload" className="hover:underline">Upload</Link>
@@ -27,7 +27,8 @@ export default function App() {
 
         <main className="max-w-6xl mx-auto px-4 py-8">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<LandingPage />}/>
+            <Route path="/home" element={<Home />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />

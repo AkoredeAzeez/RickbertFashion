@@ -14,10 +14,20 @@ export default function Home() {
 
   const loadProducts = async () => {
     try {
-      const data = await fetchProducts();
-      setProducts(data);
+      const res = await fetchProducts();
+      console.log("API response:", res);
+
+      // Normalize response (handle both array or object with products)
+      if (Array.isArray(res)) {
+        setProducts(res);
+      } else if (res && Array.isArray(res.products)) {
+        setProducts(res.products);
+      } else {
+        setProducts([]); // fallback
+      }
     } catch (err) {
       console.error("Failed to load products", err);
+      setProducts([]);
     }
   };
 
@@ -70,37 +80,45 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {products.map((p) => (
-          <div
-            key={p._id}
-            className="bg-white rounded-2xl shadow p-4 flex flex-col"
-          >
-            <Link to={`/product/${p._id}`} className="block">
-              <img
-                src={p.images?.[0]}
-                alt={p.name}
-                className="rounded-xl w-full h-56 object-cover"
-              />
-            </Link>
-            <h3 className="mt-3 font-semibold">{p.name}</h3>
-            <p className="text-sm text-gray-500 line-clamp-2">{p.description}</p>
-            <div className="mt-auto flex items-center justify-between pt-4 gap-2">
-              <span className="font-bold">₦{p.price.toLocaleString()}</span>
-              <button
-                onClick={() => handleAddToCart(p)}
-                className="px-3 py-2 rounded-xl bg-black text-white hover:opacity-90"
-              >
-                Add to cart
-              </button>
-              <button
-                onClick={() => handleDelete(p._id)}
-                className="px-3 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600"
-              >
-                Delete
-              </button>
+        {products.length > 0 ? (
+          products.map((p) => (
+            <div
+              key={p._id}
+              className="bg-white rounded-2xl shadow p-4 flex flex-col"
+            >
+              <Link to={`/product/${p._id}`} className="block">
+                <img
+                  src={p.images?.[0]}
+                  alt={p.name}
+                  className="rounded-xl w-full h-56 object-cover"
+                />
+              </Link>
+              <h3 className="mt-3 font-semibold">{p.name}</h3>
+              <p className="text-sm text-gray-500 line-clamp-2">
+                {p.description}
+              </p>
+              <div className="mt-auto flex items-center justify-between pt-4 gap-2">
+                <span className="font-bold">₦{p.price.toLocaleString()}</span>
+                <button
+                  onClick={() => handleAddToCart(p)}
+                  className="px-3 py-2 rounded-xl bg-black text-white hover:opacity-90"
+                >
+                  Add to cart
+                </button>
+                <button
+                  onClick={() => handleDelete(p._id)}
+                  className="px-3 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="text-gray-500 col-span-full text-center">
+            No products available
+          </p>
+        )}
       </div>
     </div>
   );
