@@ -23,6 +23,8 @@ const server = http.createServer(app); // use http server for WS
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+app.use(cors({ origin: CLIENT_URL }));
+
 // ===== WebSocket Setup =====
 const wss = new WebSocketServer({ server });
 const broadcast = (message) => {
