@@ -21,50 +21,77 @@ const Orders = () => {
     fetchOrders();
   }, []);
 
-  if (loading) return <p>Loading orders...</p>;
+  if (loading) {
+    return (
+      <div className="p-6 text-center text-gray-600">
+        <p className="animate-pulse">Loading orders...</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>All Orders</h2>
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold mb-6 text-gray-800">All Orders</h2>
+
       {orders.length === 0 ? (
-        <p>No orders found.</p>
+        <p className="text-gray-500">No orders found.</p>
       ) : (
-        <table border="1" cellPadding="10" cellSpacing="0" style={{ width: "100%" }}>
-          <thead>
-            <tr>
-              <th>Customer</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Address</th>
-              <th>Items</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order._id}>
-                <td>{order.customer?.name}</td>
-                <td>{order.customer?.email}</td>
-                <td>{order.customer?.phone}</td>
-                <td>{order.customer?.address}</td>
-                <td>
-                  <ul>
-                    {order.items.map((item, i) => (
-                      <li key={i}>
-                        {item.product?.name} x {item.qty} = ₦{item.price * item.qty}
-                      </li>
-                    ))}
-                  </ul>
-                </td>
-                <td>₦{order.amount}</td>
-                <td>{order.status}</td>
-                <td>{new Date(order.createdAt).toLocaleString()}</td>
+        <div className="overflow-x-auto bg-white shadow rounded-lg">
+          <table className="w-full text-sm text-left text-gray-600">
+            <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
+              <tr>
+                <th className="px-4 py-3">Customer</th>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">Phone</th>
+                <th className="px-4 py-3">Address</th>
+                <th className="px-4 py-3">Items</th>
+                <th className="px-4 py-3">Amount</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr
+                  key={order._id}
+                  className="border-b last:border-none hover:bg-gray-50 transition"
+                >
+                  <td className="px-4 py-3 font-medium">{order.customer?.name}</td>
+                  <td className="px-4 py-3">{order.customer?.email}</td>
+                  <td className="px-4 py-3">{order.customer?.phone}</td>
+                  <td className="px-4 py-3">{order.customer?.address}</td>
+                  <td className="px-4 py-3">
+                    <ul className="list-disc list-inside space-y-1">
+                      {order.items.map((item, i) => (
+                        <li key={i}>
+                          {item.product?.name} × {item.qty} ={" "}
+                          <span className="font-medium">
+                            ₦{item.price * item.qty}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td className="px-4 py-3 font-semibold">₦{order.amount}</td>
+                  <td
+                    className={`px-4 py-3 font-medium ${
+                      order.status === "paid"
+                        ? "text-green-600"
+                        : order.status === "failed"
+                        ? "text-red-600"
+                        : "text-yellow-600"
+                    }`}
+                  >
+                    {order.status}
+                  </td>
+                  <td className="px-4 py-3">
+                    {new Date(order.createdAt).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

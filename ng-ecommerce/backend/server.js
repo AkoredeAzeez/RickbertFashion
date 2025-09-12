@@ -23,6 +23,7 @@ const __dirname = path.dirname(__filename);
 // ===== Middleware =====
 app.use(cors({ origin: CLIENT_URL, credentials: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ===== MongoDB Connection =====
@@ -78,7 +79,7 @@ const orderSchema = new mongoose.Schema(
 const Product = mongoose.model("Product", productSchema);
 const Order = mongoose.model("Order", orderSchema);
 
-// ===== Multer Config =====
+// ===== Multer Config (optional for future local uploads) =====
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, "uploads")),
   filename: (req, file, cb) =>
@@ -121,31 +122,21 @@ app.delete("/api/products/:id", async (req, res) => {
 
     if (product.images && product.images.length > 0) {
       product.images.forEach((imgPath) => {
-        // If imgPath is a full URL, extract only the "/uploads/..." part
         let relativePath = imgPath;
-
         if (imgPath.startsWith("http")) {
           try {
             const urlObj = new URL(imgPath);
-            relativePath = urlObj.pathname; // "/uploads/..."
+            relativePath = urlObj.pathname;
           } catch (err) {
             console.error("⚠️ Invalid URL in product.images:", imgPath);
-            return; // skip this one
+            return;
           }
         }
-
-        const fullPath = path.join(
-          process.cwd(),
-          relativePath.replace(/^\//, "")
-        );
+        const fullPath = path.join(process.cwd(), relativePath.replace(/^\//, ""));
         console.log("🗑️ Attempting to delete:", fullPath);
-
         fs.unlink(fullPath, (err) => {
-          if (err) {
-            console.error("⚠️ Failed to delete image:", fullPath, err.message);
-          } else {
-            console.log("✅ Successfully deleted:", fullPath);
-          }
+          if (err) console.error("⚠️ Failed to delete image:", fullPath, err.message);
+          else console.log("✅ Successfully deleted:", fullPath);
         });
       });
     } else {
@@ -159,31 +150,48 @@ app.delete("/api/products/:id", async (req, res) => {
   }
 });
 
-app.post("/api/products", upload.single("image"), async (req, res) => {
+// ===== Updated POST /api/products =====
+app.post("/api/products", async (req, res) => {
   try {
-    const { name, description, price, category, brand, sizes, colors, stock } =
-      req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      brand,
+      sizes,
+      colors,
+      stock,
+      images, // expect array of Cloudinary URLs
+    } = req.body;
 
-    const imageUrl = req.file
-      ? `${BACKEND_URL}/uploads/${req.file.filename}`
-      : null;
+    console.log("✅ Backend received new product request");
+    console.log("Images:", images);
+    console.log("Other fields:", { name, price, category, brand, sizes, colors, stock });
+
+    if (!name || !price || !images || images.length === 0) {
+      return res.status(400).json({ message: "Name, price, and images are required" });
+    }
+
     const product = new Product({
       name,
       description,
       price,
       category,
       brand,
-      sizes: sizes ? sizes.split(",") : [],
-      colors: colors ? colors.split(",") : [],
+      sizes: Array.isArray(sizes) ? sizes : sizes?.split(",") || [],
+      colors: Array.isArray(colors) ? colors : colors?.split(",") || [],
       stock,
       inStock: stock > 0,
-      images: imageUrl ? [imageUrl] : [],
+      images,
     });
 
     await product.save();
+    console.log(`🎉 Product saved: ${product.name} with ${images.length} image(s)`);
+
     res.status(201).json(product);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Product upload failed:", err);
     res.status(500).json({ message: "Product upload failed" });
   }
 });
@@ -330,7 +338,6 @@ app.post("/api/checkout/save-order", async (req, res) => {
     res.status(500).json({ error: "Failed to save order" });
   }
 });
-
 // ===== Start Server =====
 app.listen(PORT, "0.0.0.0", () =>
   console.log(`🚀 API running on port ${PORT}`)

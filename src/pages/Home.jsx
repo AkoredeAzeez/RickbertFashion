@@ -77,7 +77,7 @@ export default function Home() {
           >
             <Link to={`/product/${p._id}`} className="block">
               <img
-                src={p.images?.[0]}
+                src={p.imageUrl}
                 alt={p.name}
                 className="rounded-xl w-full h-56 object-cover"
               />

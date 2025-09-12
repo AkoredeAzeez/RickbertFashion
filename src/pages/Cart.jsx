@@ -16,7 +16,7 @@ export default function Cart() {
     <div className="space-y-6">
       {cart.map((i) => (
         <div key={i._id} className="bg-white p-4 rounded-xl shadow flex gap-4 items-center">
-          <img src={i.images?.[0]} className="w-24 h-24 rounded object-cover" />
+          <img src={i.imageUrl} className="w-24 h-24 rounded object-cover" />
           <div className="flex-1">
             <div className="font-semibold">{i.name}</div>
             <div className="text-sm text-gray-500">₦{i.price.toLocaleString()}</div>

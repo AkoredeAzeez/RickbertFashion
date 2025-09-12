@@ -13,7 +13,7 @@ export default function ProductDetail() {
   if (!p) return <div>Loading...</div>;
   return (
     <div className="grid md:grid-cols-2 gap-8">
-      <img src={p.images?.[0]} alt={p.name} className="rounded-2xl w-full h-[480px] object-cover" />
+      <img src={p.imageUrl} alt={p.name} className="rounded-2xl w-full h-[480px] object-cover" />
       <div>
         <h1 className="text-2xl font-bold">{p.name}</h1>
         <p className="text-gray-600 mt-2">{p.description}</p>
