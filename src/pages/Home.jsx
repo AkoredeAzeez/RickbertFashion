@@ -221,7 +221,7 @@ export default function Home() {
                     <div className="relative aspect-[4/5] overflow-hidden bg-stone-50">
                       <Link to={`/product/${product._id}`} className="block h-full">
                         <motion.img
-                          src={product.images?.[0]}
+                          src={product.images && product.images.length > 0 ? product.images[0] : "/placeholder.png"}
                           alt={product.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           loading="lazy"

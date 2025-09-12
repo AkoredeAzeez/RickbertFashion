@@ -56,10 +56,7 @@ export default function Cart() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.8 }}
           >
-            <Link
-              to="/home"
-              className="inline-block relative group"
-            >
+            <Link to="/home" className="inline-block relative group">
               <motion.div
                 className="absolute inset-0 bg-stone-900"
                 initial={{ scaleX: 0 }}
@@ -95,87 +92,108 @@ export default function Cart() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-6">
             <AnimatePresence>
-              {cart.map((item, index) => (
-                <motion.div
-                  key={item._id}
-                  className="bg-white border border-stone-200 overflow-hidden shadow-sm"
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50, height: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  layout
-                >
-                  <div className="p-6 md:p-8">
-                    <div className="flex flex-col md:flex-row gap-6">
-                      {/* Product Image */}
-                      <motion.div
-                        className="w-full md:w-32 h-48 md:h-32 bg-stone-100 overflow-hidden flex-shrink-0"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <img
-                          src={item.images?.[0] || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop'}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </motion.div>
+              {cart.map((item, index) => {
+                const imgSrc =
+                  item.imageUrl && item.imageUrl.startsWith("http")
+                    ? item.imageUrl
+                    : item.images && item.images.length > 0
+                    ? item.images[0]
+                    : "/placeholder.png"; // fallback
 
-                      {/* Product Details */}
-                      <div className="flex-1 space-y-4">
-                        <div>
-                          <h3 className="text-lg font-light tracking-wide text-stone-900 uppercase mb-2">
-                            {item.name}
-                          </h3>
-                          <p className="text-stone-600 font-light">
-                            ₦{item.price.toLocaleString()}
-                          </p>
-                        </div>
+                console.log("🛒 Rendering cart item:", {
+                  id: item._id,
+                  name: item.name,
+                  imageUrl: item.imageUrl,
+                  images: item.images,
+                  resolvedSrc: imgSrc,
+                });
 
-                        {/* Quantity and Remove Controls */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                          <div className="flex items-center gap-4">
-                            <label className="text-sm font-light tracking-wide text-stone-700 uppercase">
-                              Quantity
-                            </label>
-                            <motion.select
-                              value={item.qty}
-                              onChange={(e) => updateQty(item._id, Number(e.target.value))}
-                              className="w-20 px-3 py-2 border border-stone-300 text-stone-900 font-light focus:border-stone-500 focus:outline-none transition-colors duration-300"
-                              whileFocus={{ scale: 1.02 }}
-                            >
-                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                                <option key={num} value={num}>{num}</option>
-                              ))}
-                            </motion.select>
-                          </div>
-
-                          <motion.button
-                            onClick={() => removeItem(item._id)}
-                            className="text-sm font-light tracking-wide text-stone-500 hover:text-red-600 transition-colors duration-300 uppercase self-start sm:self-center"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            Remove Item
-                          </motion.button>
-                        </div>
-                      </div>
-
-                      {/* Item Total */}
-                      <div className="text-right md:text-left md:w-24 flex-shrink-0">
-                        <motion.p
-                          className="text-lg font-light text-stone-900"
-                          key={item.qty * item.price} // Re-animate when total changes
-                          initial={{ scale: 1.1, color: "#059669" }}
-                          animate={{ scale: 1, color: "#1c1917" }}
+                return (
+                  <motion.div
+                    key={item._id}
+                    className="bg-white border border-stone-200 overflow-hidden shadow-sm"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50, height: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    layout
+                  >
+                    <div className="p-6 md:p-8">
+                      <div className="flex flex-col md:flex-row gap-6">
+                        {/* Product Image */}
+                        <motion.div
+                          className="w-full md:w-32 h-48 md:h-32 bg-stone-100 overflow-hidden flex-shrink-0"
+                          whileHover={{ scale: 1.05 }}
                           transition={{ duration: 0.3 }}
                         >
-                          ₦{(item.price * item.qty).toLocaleString()}
-                        </motion.p>
+                          <img
+                            src={imgSrc}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </motion.div>
+
+                        {/* Product Details */}
+                        <div className="flex-1 space-y-4">
+                          <div>
+                            <h3 className="text-lg font-light tracking-wide text-stone-900 uppercase mb-2">
+                              {item.name}
+                            </h3>
+                            <p className="text-stone-600 font-light">
+                              ₦{item.price.toLocaleString()}
+                            </p>
+                          </div>
+
+                          {/* Quantity and Remove Controls */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                              <label className="text-sm font-light tracking-wide text-stone-700 uppercase">
+                                Quantity
+                              </label>
+                              <motion.select
+                                value={item.qty}
+                                onChange={(e) =>
+                                  updateQty(item._id, Number(e.target.value))
+                                }
+                                className="w-20 px-3 py-2 border border-stone-300 text-stone-900 font-light focus:border-stone-500 focus:outline-none transition-colors duration-300"
+                                whileFocus={{ scale: 1.02 }}
+                              >
+                                {[...Array(10).keys()].map((num) => (
+                                  <option key={num + 1} value={num + 1}>
+                                    {num + 1}
+                                  </option>
+                                ))}
+                              </motion.select>
+                            </div>
+
+                            <motion.button
+                              onClick={() => removeItem(item._id)}
+                              className="text-sm font-light tracking-wide text-stone-500 hover:text-red-600 transition-colors duration-300 uppercase self-start sm:self-center"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              Remove Item
+                            </motion.button>
+                          </div>
+                        </div>
+
+                        {/* Item Total */}
+                        <div className="text-right md:text-left md:w-24 flex-shrink-0">
+                          <motion.p
+                            className="text-lg font-light text-stone-900"
+                            key={item.qty * item.price}
+                            initial={{ scale: 1.1, color: "#059669" }}
+                            animate={{ scale: 1, color: "#1c1917" }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            ₦{(item.price * item.qty).toLocaleString()}
+                          </motion.p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           </div>
 
@@ -194,25 +212,25 @@ export default function Cart() {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between items-center py-2 border-b border-stone-100">
                   <span className="text-stone-600 font-light">
-                    Subtotal ({cart.length} {cart.length === 1 ? 'item' : 'items'})
+                    Subtotal ({cart.length} {cart.length === 1 ? "item" : "items"})
                   </span>
                   <span className="font-light text-stone-900">
                     ₦{total.toLocaleString()}
                   </span>
                 </div>
-                
+
                 <div className="flex justify-between items-center py-2 border-b border-stone-100">
                   <span className="text-stone-600 font-light">Shipping</span>
                   <span className="font-light text-stone-900">Free</span>
                 </div>
-                
+
                 <div className="flex justify-between items-center py-4 border-t border-stone-300">
                   <span className="text-lg font-light tracking-wide text-stone-900 uppercase">
                     Total
                   </span>
                   <motion.span
                     className="text-xl font-light text-stone-900"
-                    key={total} // Re-animate when total changes
+                    key={total}
                     initial={{ scale: 1.1, color: "#059669" }}
                     animate={{ scale: 1, color: "#1c1917" }}
                     transition={{ duration: 0.3 }}
@@ -223,10 +241,7 @@ export default function Cart() {
               </div>
 
               {/* Checkout Button */}
-              <motion.div
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   to="/checkout"
                   className="block w-full relative group overflow-hidden"
