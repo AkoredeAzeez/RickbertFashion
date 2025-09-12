@@ -153,86 +153,56 @@ export default function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <motion.div
-            className="text-center"
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 1.2, delay: 0.3 }}
-          >
-            <motion.h1
-              className="text-4xl md:text-6xl lg:text-7xl font-thin tracking-wider mb-6"
-              style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
-            >
-              RICKBERT COLLECTION
-            </motion.h1>
-            <motion.div
-              className="w-32 h-0.5 bg-white mx-auto mb-6"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 1.5, delay: 0.8 }}
-            />
-            <motion.p
-              className="text-lg md:text-xl font-light tracking-wide opacity-80 max-w-2xl mx-auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.8 }}
-              transition={{ delay: 1.2, duration: 1 }}
-            >
-              Discover timeless pieces crafted for the modern wardrobe
-            </motion.p>
-          </motion.div>
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="mb-8 rounded-2xl p-10 bg-gradient-to-r from-amber-100 to-yellow-50 text-black">
+            <h1 className="text-3xl font-bold mb-2">RICKBERT-FASHION</h1>
+            <p className="text-gray-600">
+              Beautiful styles, fast delivery, secure Paystack checkout.
+            </p>
+          </div>
+
+          {/* Search and Filter Controls */}
+          <div className="mb-8 space-y-6">
+            {/* Search Bar */}
+            <div className="max-w-md mx-auto">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/50 transition-colors"
+              />
+            </div>
+
+            {/* Sort Options */}
+            <div className="flex flex-wrap justify-center gap-4">
+              {[
+                { value: 'newest', label: 'Newest' },
+                { value: 'price-low', label: 'Price: Low to High' },
+                { value: 'price-high', label: 'Price: High to Low' },
+                { value: 'name', label: 'Alphabetical' }
+              ].map((option) => (
+                <motion.button
+                  key={option.value}
+                  onClick={() => setSortBy(option.value)}
+                  className={`px-6 py-2 text-sm font-light tracking-wide transition-all duration-300 ${
+                    sortBy === option.value
+                      ? 'bg-white text-black'
+                      : 'bg-black text-white border border-white/20 hover:border-white/50'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {option.label}
+                </motion.button>
+              ))}
+            </div>
+          </div>
         </div>
       </motion.section>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Search and Filter Section */}
-        <motion.div
-          className="mb-12 space-y-6"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-        >
-          {/* Search Bar */}
-          <div className="relative max-w-md mx-auto">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-6 py-4 bg-white border border-stone-200 focus:border-black focus:outline-none transition-colors duration-300 font-light tracking-wide text-sm"
-            />
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-stone-400">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Sort Options */}
-          <div className="flex flex-wrap justify-center gap-4">
-            {[
-              { value: 'newest', label: 'Newest' },
-              { value: 'price-low', label: 'Price: Low to High' },
-              { value: 'price-high', label: 'Price: High to Low' },
-              { value: 'name', label: 'Alphabetical' }
-            ].map((option) => (
-              <motion.button
-                key={option.value}
-                onClick={() => setSortBy(option.value)}
-                className={`px-6 py-2 text-sm font-light tracking-wide transition-all duration-300 ${
-                  sortBy === option.value
-                    ? 'bg-black text-white'
-                    : 'bg-white text-black border border-stone-200 hover:border-black'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {option.label}
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
-
+      {/* Products Section */}
+      <div className="container mx-auto px-6 py-12">
         {/* Products Grid */}
         {loading ? (
           <div className="flex justify-center items-center py-32">

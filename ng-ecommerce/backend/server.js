@@ -7,6 +7,8 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import http from "http";
+import { WebSocketServer } from "ws";
 
 import {
   BACKEND_URL,
@@ -17,12 +19,27 @@ import {
 } from "./constants.js";
 
 const app = express();
+const server = http.createServer(app); // use http server for WS
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ===== WebSocket Setup =====
+const wss = new WebSocketServer({ server });
+const broadcast = (message) => {
+  const data = JSON.stringify(message);
+  wss.clients.forEach((client) => {
+    if (client.readyState === 1) client.send(data);
+  });
+};
+wss.on("connection", (ws) => {
+  console.log("🔌 WebSocket client connected");
+  ws.on("close", () => console.log("❌ WebSocket client disconnected"));
+});
 
 // ===== Middleware =====
 app.use(cors({ origin: CLIENT_URL, credentials: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ===== MongoDB Connection =====
@@ -78,7 +95,7 @@ const orderSchema = new mongoose.Schema(
 const Product = mongoose.model("Product", productSchema);
 const Order = mongoose.model("Order", orderSchema);
 
-// ===== Multer Config =====
+// ===== Multer Config (optional for future local uploads) =====
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, "uploads")),
   filename: (req, file, cb) =>
@@ -90,7 +107,6 @@ const storage = multer.diskStorage({
         path.extname(file.originalname)
     ),
 });
-
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) =>
@@ -121,31 +137,21 @@ app.delete("/api/products/:id", async (req, res) => {
 
     if (product.images && product.images.length > 0) {
       product.images.forEach((imgPath) => {
-        // If imgPath is a full URL, extract only the "/uploads/..." part
         let relativePath = imgPath;
-
         if (imgPath.startsWith("http")) {
           try {
             const urlObj = new URL(imgPath);
-            relativePath = urlObj.pathname; // "/uploads/..."
+            relativePath = urlObj.pathname;
           } catch (err) {
             console.error("⚠️ Invalid URL in product.images:", imgPath);
-            return; // skip this one
+            return;
           }
         }
-
-        const fullPath = path.join(
-          process.cwd(),
-          relativePath.replace(/^\//, "")
-        );
+        const fullPath = path.join(process.cwd(), relativePath.replace(/^\//, ""));
         console.log("🗑️ Attempting to delete:", fullPath);
-
         fs.unlink(fullPath, (err) => {
-          if (err) {
-            console.error("⚠️ Failed to delete image:", fullPath, err.message);
-          } else {
-            console.log("✅ Successfully deleted:", fullPath);
-          }
+          if (err) console.error("⚠️ Failed to delete image:", fullPath, err.message);
+          else console.log("✅ Successfully deleted:", fullPath);
         });
       });
     } else {
@@ -159,31 +165,47 @@ app.delete("/api/products/:id", async (req, res) => {
   }
 });
 
-app.post("/api/products", upload.single("image"), async (req, res) => {
+// ===== Updated POST /api/products =====
+app.post("/api/products", async (req, res) => {
   try {
-    const { name, description, price, category, brand, sizes, colors, stock } =
-      req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      brand,
+      sizes,
+      colors,
+      stock,
+      images,
+    } = req.body;
 
-    const imageUrl = req.file
-      ? `${BACKEND_URL}/uploads/${req.file.filename}`
-      : null;
+    console.log("✅ Backend received new product request");
+    console.log("Images:", images);
+
+    if (!name || !price || !images || images.length === 0) {
+      return res.status(400).json({ message: "Name, price, and images are required" });
+    }
+
     const product = new Product({
       name,
       description,
       price,
       category,
       brand,
-      sizes: sizes ? sizes.split(",") : [],
-      colors: colors ? colors.split(",") : [],
+      sizes: Array.isArray(sizes) ? sizes : sizes?.split(",") || [],
+      colors: Array.isArray(colors) ? colors : colors?.split(",") || [],
       stock,
       inStock: stock > 0,
-      images: imageUrl ? [imageUrl] : [],
+      images,
     });
 
     await product.save();
+    console.log(`🎉 Product saved: ${product.name} with ${images.length} image(s)`);
+
     res.status(201).json(product);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Product upload failed:", err);
     res.status(500).json({ message: "Product upload failed" });
   }
 });
@@ -192,59 +214,39 @@ app.post("/api/products", upload.single("image"), async (req, res) => {
 app.post("/api/checkout/paystack/initiate", async (req, res) => {
   try {
     const { amount, email, name, phone, address, cart } = req.body;
-
     if (!amount || !email) {
       return res.status(400).json({ message: "Amount and email are required" });
     }
 
-    const redirectUrl = `${CLIENT_URL}/payment-success`; // frontend success page
+    const redirectUrl = `${CLIENT_URL}/payment-success`;
 
-    // 🔹 Step 1: Initialize Paystack transaction
     const response = await axios.post(
       "https://api.paystack.co/transaction/initialize",
-      {
-        amount, // still in kobo for Paystack
-        email,
-        callback_url: redirectUrl,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
+      { amount, email, callback_url: redirectUrl },
+      { headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` } }
     );
 
     const { reference, authorization_url } = response.data.data;
 
-    // 🔹 Step 2: Save order to MongoDB
     const order = new Order({
       items: cart.map((item) => ({
-        product: item._id || null, // store Product _id if available
-        name: item.name,           // store product name (fallback if no Product model)
+        product: item._id || null,
+        name: item.name,
         qty: item.qty,
         price: item.price,
       })),
-      customer: {
-        name,
-        email,
-        phone,
-        address,
-      },
-      amount: amount / 100, // convert back to naira for storage
+      customer: { name, email, phone, address },
+      amount: amount / 100,
       status: "pending",
       reference,
     });
 
     await order.save();
 
-    // 🔹 Step 3: Send Paystack authorization URL back to frontend
-    res.json({
-      success: true,
-      reference,
-      authorization_url,
-      orderId: order._id, // optional: return orderId for frontend tracking
-    });
+    // 🔔 Broadcast new order
+    broadcast({ type: "NEW_ORDER", order });
+
+    res.json({ success: true, reference, authorization_url, orderId: order._id });
   } catch (err) {
     console.error("Paystack initiate error:", err.response?.data || err.message);
     res.status(500).json({ message: "Payment initiation failed" });
@@ -255,43 +257,25 @@ app.get("/api/checkout/paystack/verify/:reference", async (req, res) => {
   try {
     const { reference } = req.params;
 
-    // 🔹 Step 1: Verify with Paystack
     const verifyRes = await axios.get(
       `https://api.paystack.co/transaction/verify/${reference}`,
-      {
-        headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-        },
-      }
+      { headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` } }
     );
 
     const { status } = verifyRes.data.data;
-
-    // 🔹 Step 2: Find the order in MongoDB
     const order = await Order.findOne({ reference });
 
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // 🔹 Step 3: Update order status if successful
     if (status === "success") {
       order.status = "paid";
       await order.save();
+
+      // 🔔 Broadcast payment confirmation
+      broadcast({ type: "PAYMENT_CONFIRMED", order });
     }
 
-    // 🔹 Step 4: Return full order object to frontend
-    res.json({
-      status,
-      order: {
-        _id: order._id,
-        customer: order.customer,
-        items: order.items,
-        amount: order.amount,
-        status: order.status,
-        reference: order.reference,
-      },
-    });
+    res.json({ status, order });
   } catch (err) {
     console.error("Paystack verify error:", err.response?.data || err.message);
     res.status(500).json({ message: "Payment verification failed" });
@@ -302,13 +286,40 @@ app.get("/api/checkout/paystack/verify/:reference", async (req, res) => {
 app.get("/api/orders", async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("items.product", "name price") // only return name + price of products
-      .sort({ createdAt: -1 }); // newest first
-
+      .populate("items.product", "name price")
+      .sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
     console.error("Failed to fetch orders:", err.message);
     res.status(500).json({ message: "Failed to fetch orders" });
+  }
+});
+
+app.put("/api/orders/:id", async (req, res) => {
+  try {
+    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // 🔔 Broadcast order update
+    broadcast({ type: "ORDER_UPDATED", order });
+
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.delete("/api/orders/:id", async (req, res) => {
+  try {
+    const order = await Order.findByIdAndDelete(req.params.id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // 🔔 Broadcast order deletion
+    broadcast({ type: "ORDER_DELETED", orderId: req.params.id });
+
+    res.json({ message: "Order deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -332,6 +343,6 @@ app.post("/api/checkout/save-order", async (req, res) => {
 });
 
 // ===== Start Server =====
-app.listen(PORT, "0.0.0.0", () =>
-  console.log(`🚀 API running on port ${PORT}`)
+server.listen(PORT, "0.0.0.0", () =>
+  console.log(`🚀 API + WS running on port ${PORT}`)
 );
