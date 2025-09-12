@@ -149,10 +149,14 @@ app.delete("/api/products/:id", async (req, res) => {
             return;
           }
         }
-        const fullPath = path.join(process.cwd(), relativePath.replace(/^\//, ""));
+        const fullPath = path.join(
+          process.cwd(),
+          relativePath.replace(/^\//, "")
+        );
         console.log("🗑️ Attempting to delete:", fullPath);
         fs.unlink(fullPath, (err) => {
-          if (err) console.error("⚠️ Failed to delete image:", fullPath, err.message);
+          if (err)
+            console.error("⚠️ Failed to delete image:", fullPath, err.message);
           else console.log("✅ Successfully deleted:", fullPath);
         });
       });
@@ -186,7 +190,9 @@ app.post("/api/products", async (req, res) => {
     console.log("Images:", images);
 
     if (!name || !price || !images || images.length === 0) {
-      return res.status(400).json({ message: "Name, price, and images are required" });
+      return res
+        .status(400)
+        .json({ message: "Name, price, and images are required" });
     }
 
     const product = new Product({
@@ -203,7 +209,9 @@ app.post("/api/products", async (req, res) => {
     });
 
     await product.save();
-    console.log(`🎉 Product saved: ${product.name} with ${images.length} image(s)`);
+    console.log(
+      `🎉 Product saved: ${product.name} with ${images.length} image(s)`
+    );
 
     res.status(201).json(product);
   } catch (err) {
@@ -248,9 +256,17 @@ app.post("/api/checkout/paystack/initiate", async (req, res) => {
     // 🔔 Broadcast new order
     broadcast({ type: "NEW_ORDER", order });
 
-    res.json({ success: true, reference, authorization_url, orderId: order._id });
+    res.json({
+      success: true,
+      reference,
+      authorization_url,
+      orderId: order._id,
+    });
   } catch (err) {
-    console.error("Paystack initiate error:", err.response?.data || err.message);
+    console.error(
+      "Paystack initiate error:",
+      err.response?.data || err.message
+    );
     res.status(500).json({ message: "Payment initiation failed" });
   }
 });
@@ -299,7 +315,9 @@ app.get("/api/orders", async (req, res) => {
 
 app.put("/api/orders/:id", async (req, res) => {
   try {
-    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const order = await Order.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!order) return res.status(404).json({ message: "Order not found" });
 
     // 🔔 Broadcast order update
