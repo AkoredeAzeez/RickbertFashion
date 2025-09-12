@@ -108,70 +108,56 @@ export default function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
         </div>
 
-      <div className="mb-8 rounded-2xl p-10 bg-gradient-to-r from-amber-100 to-yellow-50">
-        <h1 className="text-3xl font-bold mb-2">RICKBERT-FASHION</h1>
-        <p className="text-gray-600">
-          Beautiful styles, fast delivery, secure Paystack checkout.
-        </p>
-      </div>
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="mb-8 rounded-2xl p-10 bg-gradient-to-r from-amber-100 to-yellow-50 text-black">
+            <h1 className="text-3xl font-bold mb-2">RICKBERT-FASHION</h1>
+            <p className="text-gray-600">
+              Beautiful styles, fast delivery, secure Paystack checkout.
+            </p>
+          </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {products.map((p) => (
-          <div
-            key={p._id}
-            className="bg-white rounded-2xl shadow p-4 flex flex-col"
-          >
-            <Link to={`/product/${p._id}`} className="block">
-              <img
-                src={p.images?.[0]}
-                alt={p.name}
-                className="rounded-xl w-full h-56 object-cover"
+          {/* Search and Filter Controls */}
+          <div className="mb-8 space-y-6">
+            {/* Search Bar */}
+            <div className="max-w-md mx-auto">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/50 transition-colors"
               />
-            </Link>
-            <h3 className="mt-3 font-semibold">{p.name}</h3>
-            <p className="text-sm text-gray-500 line-clamp-2">{p.description}</p>
-            <div className="mt-auto flex items-center justify-between pt-4 gap-2">
-              <span className="font-bold">₦{p.price.toLocaleString()}</span>
-              <button
-                onClick={() => handleAddToCart(p)}
-                className="px-3 py-2 rounded-xl bg-black text-white hover:opacity-90"
-              >
-                Add to cart
-              </button>
-              <button
-                onClick={() => handleDelete(p._id)}
-                className="px-3 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600"
-              >
-                Delete
-              </button>
+            </div>
+
+            {/* Sort Options */}
+            <div className="flex flex-wrap justify-center gap-4">
+              {[
+                { value: 'newest', label: 'Newest' },
+                { value: 'price-low', label: 'Price: Low to High' },
+                { value: 'price-high', label: 'Price: High to Low' },
+                { value: 'name', label: 'Alphabetical' }
+              ].map((option) => (
+                <motion.button
+                  key={option.value}
+                  onClick={() => setSortBy(option.value)}
+                  className={`px-6 py-2 text-sm font-light tracking-wide transition-all duration-300 ${
+                    sortBy === option.value
+                      ? 'bg-white text-black'
+                      : 'bg-black text-white border border-white/20 hover:border-white/50'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {option.label}
+                </motion.button>
+              ))}
             </div>
           </div>
+        </div>
+      </motion.section>
 
-          {/* Sort Options */}
-          <div className="flex flex-wrap justify-center gap-4">
-            {[
-              { value: 'newest', label: 'Newest' },
-              { value: 'price-low', label: 'Price: Low to High' },
-              { value: 'price-high', label: 'Price: High to Low' },
-              { value: 'name', label: 'Alphabetical' }
-            ].map((option) => (
-              <motion.button
-                key={option.value}
-                onClick={() => setSortBy(option.value)}
-                className={`px-6 py-2 text-sm font-light tracking-wide transition-all duration-300 ${
-                  sortBy === option.value
-                    ? 'bg-black text-white'
-                    : 'bg-white text-black border border-stone-200 hover:border-black'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {option.label}
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
-
+      {/* Products Section */}
+      <div className="container mx-auto px-6 py-12">
         {/* Products Grid */}
         {loading ? (
           <div className="flex justify-center items-center py-32">
