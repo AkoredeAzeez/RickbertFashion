@@ -56,10 +56,7 @@ export default function Cart() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.8 }}
           >
-            <Link
-              to="/home"
-              className="inline-block relative group"
-            >
+            <Link to="/home" className="inline-block relative group">
               <motion.div
                 className="absolute inset-0 bg-stone-900"
                 initial={{ scaleX: 0 }}
@@ -112,25 +109,25 @@ export default function Cart() {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between items-center py-2 border-b border-stone-100">
                   <span className="text-stone-600 font-light">
-                    Subtotal ({cart.length} {cart.length === 1 ? 'item' : 'items'})
+                    Subtotal ({cart.length} {cart.length === 1 ? "item" : "items"})
                   </span>
                   <span className="font-light text-stone-900">
                     ₦{total.toLocaleString()}
                   </span>
                 </div>
-                
+
                 <div className="flex justify-between items-center py-2 border-b border-stone-100">
                   <span className="text-stone-600 font-light">Shipping</span>
                   <span className="font-light text-stone-900">Free</span>
                 </div>
-                
+
                 <div className="flex justify-between items-center py-4 border-t border-stone-300">
                   <span className="text-lg font-light tracking-wide text-stone-900 uppercase">
                     Total
                   </span>
                   <motion.span
                     className="text-xl font-light text-stone-900"
-                    key={total} // Re-animate when total changes
+                    key={total}
                     initial={{ scale: 1.1, color: "#059669" }}
                     animate={{ scale: 1, color: "#1c1917" }}
                     transition={{ duration: 0.3 }}
@@ -141,10 +138,7 @@ export default function Cart() {
               </div>
 
               {/* Checkout Button */}
-              <motion.div
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   to="/checkout"
                   className="block w-full relative group overflow-hidden"
