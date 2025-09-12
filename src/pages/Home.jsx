@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { fetchProducts, deleteProduct } from "../lib/api";
 import { useCart } from "../state/CartContext";
 
 export default function Home() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
   const { addItem } = useCart();
   const [popup, setPopup] = useState({ message: "", visible: false });
 
@@ -14,10 +19,23 @@ export default function Home() {
 
   const loadProducts = async () => {
     try {
-      const data = await fetchProducts();
-      setProducts(data);
+      setLoading(true);
+      const res = await fetchProducts();
+      console.log("API response:", res);
+
+      // Normalize response (handle both array or object with products)
+      if (Array.isArray(res)) {
+        setProducts(res);
+      } else if (res && Array.isArray(res.products)) {
+        setProducts(res.products);
+      } else {
+        setProducts([]); // fallback
+      }
     } catch (err) {
       console.error("Failed to load products", err);
+      setProducts([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,25 +60,53 @@ export default function Home() {
     }, 2000);
   };
 
+  // Filter and sort products
+  const filteredProducts = products
+    .filter(product => 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'name':
+          return a.name.localeCompare(b.name);
+        default:
+          return 0; // newest (default order from API)
+      }
+    });
+
   return (
-    <div>
-      {/* Sliding popup */}
-      <div
-        style={{
-          position: "fixed",
-          top: popup.visible ? "20px" : "-60px",
-          right: "20px",
-          background: "#111",
-          color: "#fff",
-          padding: "10px 20px",
-          borderRadius: "8px",
-          boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
-          transition: "top 0.5s ease-in-out",
-          zIndex: 9999,
-        }}
+    <div className="min-h-screen bg-stone-50">
+      {/* Enhanced sliding popup */}
+      <AnimatePresence>
+        {popup.visible && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.9 }}
+            className="fixed top-6 right-6 bg-black text-white px-6 py-4 rounded-none shadow-2xl z-50 border-l-4 border-white"
+            style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+          >
+            <p className="font-light tracking-wide text-sm">{popup.message}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Hero Section */}
+      <motion.section 
+        className="relative py-16 md:py-24 bg-black text-white overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
       >
-        {popup.message}
-      </div>
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
+        </div>
 
       <div className="mb-8 rounded-2xl p-10 bg-gradient-to-r from-amber-100 to-yellow-50">
         <h1 className="text-3xl font-bold mb-2">RICKBERT-FASHION</h1>
@@ -77,7 +123,7 @@ export default function Home() {
           >
             <Link to={`/product/${p._id}`} className="block">
               <img
-                src={p.imageUrl}
+                src={p.images?.[0]}
                 alt={p.name}
                 className="rounded-xl w-full h-56 object-cover"
               />
@@ -100,7 +146,164 @@ export default function Home() {
               </button>
             </div>
           </div>
-        ))}
+
+          {/* Sort Options */}
+          <div className="flex flex-wrap justify-center gap-4">
+            {[
+              { value: 'newest', label: 'Newest' },
+              { value: 'price-low', label: 'Price: Low to High' },
+              { value: 'price-high', label: 'Price: High to Low' },
+              { value: 'name', label: 'Alphabetical' }
+            ].map((option) => (
+              <motion.button
+                key={option.value}
+                onClick={() => setSortBy(option.value)}
+                className={`px-6 py-2 text-sm font-light tracking-wide transition-all duration-300 ${
+                  sortBy === option.value
+                    ? 'bg-black text-white'
+                    : 'bg-white text-black border border-stone-200 hover:border-black'
+                }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {option.label}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Products Grid */}
+        {loading ? (
+          <div className="flex justify-center items-center py-32">
+            <motion.div
+              className="w-16 h-16 border-2 border-black border-t-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+          </div>
+        ) : (
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <AnimatePresence>
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product, index) => (
+                  <motion.div
+                    key={product._id}
+                    className="group bg-white shadow-sm hover:shadow-xl transition-shadow duration-500 overflow-hidden"
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -50 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    layout
+                    whileHover={{ y: -10 }}
+                  >
+                    {/* Product Image */}
+                    <div className="relative aspect-[4/5] overflow-hidden bg-stone-50">
+                      <Link to={`/product/${product._id}`} className="block h-full">
+                        <motion.img
+                          src={product.images?.[0]}
+                          alt={product.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      </Link>
+                      
+                      {/* Hover overlay */}
+                      <motion.div
+                        className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      />
+                      
+                      {/* Price tag */}
+                      <motion.div
+                        className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm text-black px-3 py-1 text-sm font-light"
+                        initial={{ x: 20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.5 + index * 0.1 }}
+                      >
+                        ₦{product.price?.toLocaleString()}
+                      </motion.div>
+                    </div>
+
+                    {/* Product Details */}
+                    <div className="p-6">
+                      <Link to={`/product/${product._id}`}>
+                        <motion.h3
+                          className="text-lg font-light tracking-wide mb-2 uppercase hover:text-stone-600 transition-colors"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.7 + index * 0.1 }}
+                        >
+                          {product.name}
+                        </motion.h3>
+                      </Link>
+                      
+                      <motion.p
+                        className="text-stone-600 text-sm font-light leading-relaxed mb-4 line-clamp-2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.8 + index * 0.1 }}
+                      >
+                        {product.description}
+                      </motion.p>
+
+                      {/* Action Buttons */}
+                      <motion.div
+                        className="flex gap-3 pt-4 border-t border-stone-100"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.9 + index * 0.1 }}
+                      >
+                        <motion.button
+                          onClick={() => handleAddToCart(product)}
+                          className="flex-1 bg-black text-white py-3 px-4 text-sm font-light tracking-wide uppercase hover:bg-stone-800 transition-colors duration-300"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          Add to Cart
+                        </motion.button>
+                        
+                        <motion.button
+                          onClick={() => handleDelete(product._id)}
+                          className="px-4 py-3 border border-red-200 text-red-600 hover:bg-red-50 transition-colors duration-300 text-sm"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          title="Delete Product"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </motion.button>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <motion.div
+                  className="col-span-full text-center py-20"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  <div className="max-w-md mx-auto">
+                    <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-8 h-8 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-light tracking-wide mb-2">No products found</h3>
+                    <p className="text-stone-600 font-light">
+                      {searchTerm ? 'Try adjusting your search terms.' : 'Check back later for new arrivals.'}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
       </div>
     </div>
   );
