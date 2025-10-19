@@ -1,0 +1,14 @@
+.home-hero {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  background: #000;
+  color: #fff;
+}
+
+.product-grid {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* small helpers */
+.line-divider { width: 8rem; height: 2px; background: #fff; margin: 0.5rem auto; }
