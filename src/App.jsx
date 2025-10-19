@@ -1,15 +1,15 @@
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Home from "./pages/Home.jsx";
-import ProductDetail from "./pages/ProductDetail.jsx";
-import Upload from "./pages/Upload.jsx";
-import Cart from "./pages/Cart.jsx";
-import Checkout from "./pages/Checkout.jsx";
-import PaymentSuccess from "./pages/PaymentSuccess.jsx"; 
-import { CartProvider } from "./state/CartContext.jsx";
-import Orders from "./pages/Orders.jsx";
-import LandingPage from "./pages/LandingPage.jsx";
+import { AnimatePresence, motion } from "framer-motion";
+import Home from "./pages/Home";
+import ProductDetail from "./pages/ProductDetail";
+import Upload from "./pages/Upload";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import PaymentSuccess from "./pages/PaymentSuccess"; 
+import { CartProvider } from "./state/CartContext";
+import Orders from "./pages/Orders";
+import LandingPage from "./pages/LandingPage";
 
 export default function App() {
   const [isNavOpen, setIsNavOpen] = useState(false);
