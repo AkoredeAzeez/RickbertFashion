@@ -49,12 +49,11 @@ const Orders = () => {
   }
 
   const getTotalRevenue = () => {
-    return orders.reduce((total, order) => total + order.attributes.total, 0)
+    return orders.reduce((total, order) => total + order.total, 0)
   }
 
   const getOrdersByStatus = (status: string) => {
-    return orders.filter((order) => order.attributes.paymentStatus === status)
-      .length
+    return orders.filter((order) => order.paymentStatus === status).length
   }
 
   if (loading) {
@@ -326,32 +325,33 @@ const Orders = () => {
                                 "'Inter', system-ui, -apple-system, sans-serif",
                             }}
                           >
-                            {order.attributes.customerName}
+                            {order.customerName}
                           </motion.h3>
                           <div className='text-stone-600 font-light tracking-[0.15em] text-sm'>
-                            {new Date(
-                              order.attributes.createdAt,
-                            ).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
+                            {new Date(order.createdAt).toLocaleDateString(
+                              'en-US',
+                              {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              },
+                            )}
                           </div>
                         </div>
 
                         <div className='flex items-center gap-6'>
                           <span
                             className={`px-6 py-2 text-xs font-light tracking-[0.2em] uppercase border transition-all duration-300 ${getStatusStyles(
-                              order.attributes.paymentStatus,
+                              order.paymentStatus,
                             )}`}
                           >
-                            {order.attributes.paymentStatus}
+                            {order.paymentStatus}
                           </span>
                           <div className='text-right'>
                             <div className='text-3xl md:text-4xl font-thin tracking-wide'>
-                              ₦{order.attributes.total.toLocaleString()}
+                              ₦{order.total.toLocaleString()}
                             </div>
                             <div className='text-stone-500 font-light tracking-[0.15em] text-xs uppercase'>
                               Total Amount
@@ -380,7 +380,7 @@ const Orders = () => {
                                 Email Address
                               </div>
                               <div className='font-light text-lg tracking-wide group-hover/item:text-stone-700 transition-colors duration-300'>
-                                {order.attributes.customerEmail}
+                                {order.customerEmail}
                               </div>
                             </motion.div>
 
@@ -393,7 +393,7 @@ const Orders = () => {
                                 Phone Number
                               </div>
                               <div className='font-light text-lg tracking-wide group-hover/item:text-stone-700 transition-colors duration-300'>
-                                {order.attributes.customerPhone}
+                                {order.customerPhone}
                               </div>
                             </motion.div>
 
@@ -406,7 +406,7 @@ const Orders = () => {
                                 Delivery Address
                               </div>
                               <div className='font-light text-lg leading-relaxed tracking-wide group-hover/item:text-stone-700 transition-colors duration-300'>
-                                {`${order.attributes.shippingAddress.street}, ${order.attributes.shippingAddress.city}`}
+                                {`${order.shippingAddress.street}, ${order.shippingAddress.city}`}
                               </div>
                             </motion.div>
                           </div>
@@ -422,7 +422,7 @@ const Orders = () => {
                           </motion.h4>
 
                           <div className='space-y-6'>
-                            {order.attributes.items.map((item, i) => (
+                            {order.items.map((item, i) => (
                               <motion.div
                                 key={i}
                                 className='border border-stone-100 p-6 group/item hover:border-stone-200 transition-all duration-500 relative overflow-hidden'
@@ -434,19 +434,18 @@ const Orders = () => {
                                 <div className='relative z-10 flex justify-between items-start'>
                                   <div className='flex-1 pr-6'>
                                     <div className='font-light text-xl tracking-wide mb-2 group-hover/item:text-black transition-colors duration-300'>
-                                      {item.product.data.attributes.name}
+                                      {item.product.data.name}
                                     </div>
                                     <div className='text-stone-500 font-light tracking-[0.15em] text-sm'>
                                       Quantity: {item.quantity} × ₦
-                                      {item.product.data.attributes.price.toLocaleString()}
+                                      {item.product.data.price.toLocaleString()}
                                     </div>
                                   </div>
                                   <div className='text-right'>
                                     <div className='font-light text-2xl tracking-wide group-hover/item:font-normal transition-all duration-300'>
                                       ₦
                                       {(
-                                        item.product.data.attributes.price *
-                                        item.quantity
+                                        item.product.data.price * item.quantity
                                       ).toLocaleString()}
                                     </div>
                                   </div>

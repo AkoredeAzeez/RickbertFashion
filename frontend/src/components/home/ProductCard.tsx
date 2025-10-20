@@ -14,8 +14,7 @@ export default function ProductCard({
   onAdd,
   onDelete,
 }: ProductCardProps) {
-  const imageUrl =
-    product.attributes.images?.data?.[0]?.attributes.url || '/placeholder.png'
+  const imageUrl = product.images?.data?.[0]?.url || '/placeholder.png'
 
   return (
     <motion.div
@@ -31,7 +30,7 @@ export default function ProductCard({
         <a href={`/product/${product.id}`} className='block h-full'>
           <img
             src={imageUrl}
-            alt={product.attributes.name}
+            alt={product.name}
             className='w-full h-full object-cover transition-transform duration-700 group-hover:scale-105'
             loading='lazy'
           />
@@ -40,19 +39,19 @@ export default function ProductCard({
         <div className='absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
 
         <div className='absolute top-4 right-4 bg-white/95 backdrop-blur-sm text-black px-3 py-1 text-sm font-light'>
-          ₦{product.attributes.price?.toLocaleString()}
+          ₦{product.price?.toLocaleString()}
         </div>
       </div>
 
       <div className='p-6'>
         <a href={`/product/${product.id}`}>
           <h3 className='text-lg font-light tracking-wide mb-2 uppercase hover:text-stone-600 transition-colors'>
-            {product.attributes.name}
+            {product.name}
           </h3>
         </a>
 
         <p className='text-stone-600 text-sm font-light leading-relaxed mb-4 line-clamp-2'>
-          {product.attributes.description}
+          {product.description}
         </p>
 
         <div className='flex gap-3 pt-4 border-t border-stone-100'>

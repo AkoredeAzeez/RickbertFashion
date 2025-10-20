@@ -74,11 +74,11 @@ const Checkout = () => {
     try {
       const checkoutCartItems = cart.map((item) => ({
         _id: String(item.id),
-        name: item.attributes.name,
-        price: item.attributes.price,
-        images: item.attributes.images.data.map((img) => img.attributes.url),
+        name: item.name,
+        price: item.price,
+        images: item.images.data.map((img) => img.url),
         qty: item.qty,
-        description: item.attributes.description,
+        description: item.description,
       }))
       await initiatePayment(formData, checkoutCartItems, total)
     } catch (err) {

@@ -49,8 +49,8 @@ Items:
 ${items
   .map(
     (item) =>
-      `- ${item.product.data.attributes.name} x${item.quantity} = ₦${
-        item.product.data.attributes.price * item.quantity
+      `- ${item.product.data.name} x${item.quantity} = ₦${
+        item.product.data.price * item.quantity
       }`,
   )
   .join('\n')}
@@ -88,25 +88,25 @@ ${items
 
       <div className='order-details'>
         <h3>Customer Info</h3>
-        <p>Name: {order.attributes.customerName}</p>
-        <p>Email: {order.attributes.customerEmail}</p>
-        <p>Phone: {order.attributes.customerPhone}</p>
+        <p>Name: {order.customerName}</p>
+        <p>Email: {order.customerEmail}</p>
+        <p>Phone: {order.customerPhone}</p>
         <p>
           Address:{' '}
-          {`${order.attributes.shippingAddress.street}, ${order.attributes.shippingAddress.city}`}
+          {`${order.shippingAddress.street}, ${order.shippingAddress.city}`}
         </p>
 
         <h3>Items</h3>
         <ul>
-          {order.attributes.items.map((item, i) => (
+          {order.items.map((item, i) => (
             <li key={i}>
-              {item.product.data.attributes.name} x {item.quantity} = ₦
-              {item.product.data.attributes.price * item.quantity}
+              {item.product.data.name} x {item.quantity} = ₦
+              {item.product.data.price * item.quantity}
             </li>
           ))}
         </ul>
 
-        <h3>Total: ₦{order.attributes.total}</h3>
+        <h3>Total: ₦{order.total}</h3>
       </div>
     </div>
   )

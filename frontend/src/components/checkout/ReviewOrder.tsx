@@ -18,11 +18,11 @@ export default function ReviewOrder({ cartItems }: ReviewOrderProps) {
           >
             <div>
               <p className='font-light text-stone-900 uppercase tracking-wide'>
-                {item.attributes.name} × {item.qty}
+                {item.name} × {item.qty}
               </p>
             </div>
             <p className='font-light text-stone-900'>
-              ₦{(item.attributes.price * item.qty).toLocaleString()}
+              ₦{(item.price * item.qty).toLocaleString()}
             </p>
           </div>
         ))}

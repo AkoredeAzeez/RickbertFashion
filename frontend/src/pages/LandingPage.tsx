@@ -94,9 +94,9 @@ export default function LandingPage() {
         loading={loading}
         products={products.map((p) => ({
           _id: p.id.toString(),
-          name: p.attributes.name,
-          price: p.attributes.price,
-          images: p.attributes.images.data.map((img) => img.attributes.url),
+          name: p.name,
+          price: p.price,
+          images: p.images.data.map((img) => img.url),
         }))}
       />
 

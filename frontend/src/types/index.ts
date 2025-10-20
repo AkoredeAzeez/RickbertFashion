@@ -5,9 +5,8 @@
 
 // --- Strapi Generic Types ---
 
-export interface StrapiDataItem<T> {
+export type StrapiDataItem<T> = T & {
   id: number
-  attributes: T
 }
 
 export interface StrapiResponse<T> {

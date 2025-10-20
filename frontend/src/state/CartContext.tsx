@@ -45,7 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clearCart = () => setCart([])
 
   const total = useMemo(
-    () => cart.reduce((s, i) => s + i.attributes.price * i.qty, 0),
+    () => cart.reduce((s, i) => s + i.price * i.qty, 0),
     [cart],
   )
 

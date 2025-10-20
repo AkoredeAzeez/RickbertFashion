@@ -49,21 +49,17 @@ export default function Home() {
   const filteredProducts = products
     .filter(
       (product) =>
-        product.attributes.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        product.attributes.description
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()),
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchTerm.toLowerCase()),
     )
     .sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
-          return a.attributes.price - b.attributes.price
+          return a.price - b.price
         case 'price-high':
-          return b.attributes.price - a.attributes.price
+          return b.price - a.price
         case 'name':
-          return a.attributes.name.localeCompare(b.attributes.name)
+          return a.name.localeCompare(b.name)
         default:
           return 0
       }

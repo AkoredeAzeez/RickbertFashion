@@ -11,19 +11,18 @@ export default function CartItem({
   updateQty,
   removeItem,
 }: CartItemProps) {
-  const imageUrl =
-    item.attributes.images?.data?.[0]?.attributes.url || '/placeholder.png'
+  const imageUrl = item.images?.data?.[0]?.url || '/placeholder.png'
   return (
     <div className='bg-white p-4 rounded-xl shadow flex gap-4 items-center'>
       <img
         src={imageUrl}
-        alt={item.attributes.name}
+        alt={item.name}
         className='w-24 h-24 rounded object-cover'
       />
       <div className='flex-1'>
-        <div className='font-semibold'>{item.attributes.name}</div>
+        <div className='font-semibold'>{item.name}</div>
         <div className='text-sm text-gray-500'>
-          ₦{item.attributes.price.toLocaleString()}
+          ₦{item.price.toLocaleString()}
         </div>
         <div className='mt-2 flex items-center gap-2'>
           <input

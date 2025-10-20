@@ -23,21 +23,20 @@ export default function ProductDetail() {
 
   if (!p) return <div>Loading...</div>
 
-  const imageUrl =
-    p.attributes.images?.data?.[0]?.attributes.url || '/placeholder.png'
+  const imageUrl = p.images?.data?.[0]?.url || '/placeholder.png'
 
   return (
     <div className='grid md:grid-cols-2 gap-8'>
       <img
         src={imageUrl}
-        alt={p.attributes.name}
+        alt={p.name}
         className='rounded-2xl w-full h-[480px] object-cover'
       />
       <div>
-        <h1 className='text-2xl font-bold'>{p.attributes.name}</h1>
-        <p className='text-gray-600 mt-2'>{p.attributes.description}</p>
+        <h1 className='text-2xl font-bold'>{p.name}</h1>
+        <p className='text-gray-600 mt-2'>{p.description}</p>
         <div className='text-2xl font-bold mt-4'>
-          ₦{p.attributes.price.toLocaleString()}
+          ₦{p.price.toLocaleString()}
         </div>
         <button
           onClick={() => addItem(p, 1)}
