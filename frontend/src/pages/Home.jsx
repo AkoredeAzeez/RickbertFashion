@@ -1,3 +1,4 @@
+import React from 'react'
 import { useEffect, useState } from "react";
 import { fetchProducts, deleteProduct } from "../lib/api";
 import { useCart } from "../state/CartContext";

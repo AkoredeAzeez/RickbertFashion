@@ -1,3 +1,4 @@
+import React from 'react';
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
