@@ -2,8 +2,6 @@ import axios from 'axios'
 import { Product, StrapiCollectionResponse, StrapiResponse } from '../types'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
-const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dctdaad7d/image/upload'
-const UPLOAD_PRESET = 'rickbertfashion'
 
 export async function fetchProducts(): Promise<Product[]> {
   try {
@@ -49,25 +47,21 @@ export interface CreateProductData {
   stock: number
 }
 
-// Note: This function uploads images to Cloudinary and saves the URLs.
-// This is not the standard Strapi way of handling media uploads, which typically
-// involves uploading directly to the Strapi media library. This might require
-// a custom backend implementation to correctly handle image URLs.
+// Note: This function uploads images to the Strapi media library and then
+// creates a product with the uploaded image IDs.
 export async function createProduct(
   productData: CreateProductData,
   files: File[],
   onUploadProgress: (progress: any) => void,
 ): Promise<Product> {
-  const uploadedUrls: string[] = []
+  const uploadedImageIds: number[] = []
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
     const formData = new FormData()
-    formData.append('file', file)
-    formData.append('upload_preset', UPLOAD_PRESET)
-    formData.append('folder', 'products')
+    formData.append('files', file)
 
-    const cloudRes = await axios.post(CLOUDINARY_URL, formData, {
+    const uploadRes = await axios.post(`${BACKEND_URL}/api/upload`, formData, {
       onUploadProgress: (progressEvent) => {
         if (progressEvent.total) {
           const percent = Math.round(
@@ -77,12 +71,15 @@ export async function createProduct(
         }
       },
     })
-    uploadedUrls.push(cloudRes.data.secure_url)
+
+    if (uploadRes.data && uploadRes.data.length > 0) {
+      uploadedImageIds.push(uploadRes.data[0].id)
+    }
   }
 
   const product = {
     ...productData,
-    images: uploadedUrls,
+    images: uploadedImageIds,
   }
 
   const productRes = await axios.post<{ data: Product }>(
