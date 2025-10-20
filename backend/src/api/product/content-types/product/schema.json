@@ -28,6 +28,15 @@
       "allowedTypes": [
         "images"
       ]
+    },
+    "sizes": {
+      "type": "string"
+    },
+    "colors": {
+      "type": "string"
+    },
+    "stock": {
+      "type": "integer"
     }
   }
 }

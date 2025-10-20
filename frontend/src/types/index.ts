@@ -80,6 +80,9 @@ export interface ProductAttributes {
   createdAt: string
   updatedAt: string
   publishedAt: string | null
+  colors: string | null
+  sizes: string | null
+  stock: number | null
 }
 
 // Based on api::order.order
