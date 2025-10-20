@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
-
 import { fetchOrders } from "../actions/orders.action";
-
-// ... (keep other imports)
+import { Order } from "../types";
 
 const Orders = () => {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const headerRef = useRef(null);
@@ -30,7 +28,7 @@ const Orders = () => {
   }, []);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
     window.addEventListener("mousemove", handleMouseMove);
@@ -39,7 +37,7 @@ const Orders = () => {
     };
   }, []);
 
-  const getStatusStyles = (status) => {
+  const getStatusStyles = (status: string) => {
     switch (status) {
       case "paid":
         return "bg-black text-white border-black";
@@ -51,17 +49,16 @@ const Orders = () => {
   };
 
   const getTotalRevenue = () => {
-    return orders.reduce((total, order) => total + order.amount, 0);
+    return orders.reduce((total, order) => total + order.attributes.total, 0);
   };
 
-  const getOrdersByStatus = (status) => {
-    return orders.filter(order => order.status === status).length;
+  const getOrdersByStatus = (status: string) => {
+    return orders.filter(order => order.attributes.paymentStatus === status).length;
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        {/* Dynamic cursor effect */}
         <motion.div
           className="fixed w-4 h-4 bg-black rounded-full pointer-events-none z-50 mix-blend-difference"
           style={{
@@ -94,7 +91,6 @@ const Orders = () => {
 
   return (
     <div className="min-h-screen bg-white text-black overflow-x-hidden">
-      {/* Dynamic cursor effect */}
       <motion.div
         className="fixed w-4 h-4 bg-black rounded-full pointer-events-none z-50 mix-blend-difference"
         style={{
@@ -107,12 +103,10 @@ const Orders = () => {
         transition={{ duration: 2, repeat: Infinity }}
       />
 
-      {/* Header Section */}
       <motion.section
         ref={headerRef}
         className="py-24 md:py-32 relative overflow-hidden"
       >
-        {/* Subtle background effects */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(0,0,0,0.02)_0%,transparent_50%)]" />
         <motion.div
           className="absolute inset-0 opacity-30"
@@ -155,7 +149,6 @@ const Orders = () => {
             </motion.p>
           </motion.div>
 
-          {/* Stats Section */}
           <motion.div
             className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-20"
             initial={{ opacity: 0, y: 30 }}
@@ -253,7 +246,6 @@ const Orders = () => {
         </div>
       </motion.section>
 
-      {/* Orders Section */}
       <section className="pb-32 relative">
         <div className="max-w-7xl mx-auto px-6">
           {orders.length === 0 ? (
@@ -297,7 +289,7 @@ const Orders = () => {
             >
               {orders.map((order, index) => (
                 <motion.div
-                  key={order._id}
+                  key={order.id}
                   className="group relative"
                   initial={{ opacity: 0, y: 50 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -305,9 +297,7 @@ const Orders = () => {
                   viewport={{ once: true }}
                   whileHover={{ y: -8 }}
                 >
-                  {/* Order Card */}
                   <div className="bg-white border border-stone-200 hover:border-stone-300 transition-all duration-500 shadow-sm hover:shadow-lg relative overflow-hidden">
-                    {/* Hover gradient effect */}
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-r from-transparent via-stone-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"
                       initial={{ x: '-100%' }}
@@ -316,17 +306,16 @@ const Orders = () => {
                     />
 
                     <div className="p-8 md:p-12 relative z-10">
-                      {/* Order Header */}
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 pb-8 border-b border-stone-100">
                         <div className="mb-4 lg:mb-0">
                           <motion.h3
                             className="text-2xl md:text-3xl font-thin tracking-wider mb-2"
                             style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
                           >
-                            {order.customer?.name}
+                            {order.attributes.customerName}
                           </motion.h3>
                           <div className="text-stone-600 font-light tracking-[0.15em] text-sm">
-                            {new Date(order.createdAt).toLocaleDateString('en-US', {
+                            {new Date(order.attributes.createdAt).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'long',
                               day: 'numeric',
@@ -337,12 +326,12 @@ const Orders = () => {
                         </div>
 
                         <div className="flex items-center gap-6">
-                          <span className={`px-6 py-2 text-xs font-light tracking-[0.2em] uppercase border transition-all duration-300 ${getStatusStyles(order.status)}`}>
-                            {order.status}
+                          <span className={`px-6 py-2 text-xs font-light tracking-[0.2em] uppercase border transition-all duration-300 ${getStatusStyles(order.attributes.paymentStatus)}`}>
+                            {order.attributes.paymentStatus}
                           </span>
                           <div className="text-right">
                             <div className="text-3xl md:text-4xl font-thin tracking-wide">
-                              ₦{order.amount.toLocaleString()}
+                              ₦{order.attributes.total.toLocaleString()}
                             </div>
                             <div className="text-stone-500 font-light tracking-[0.15em] text-xs uppercase">
                               Total Amount
@@ -351,9 +340,7 @@ const Orders = () => {
                         </div>
                       </div>
 
-                      {/* Order Content Grid */}
                       <div className="grid lg:grid-cols-2 gap-12">
-                        {/* Customer Information */}
                         <div className="space-y-8">
                           <motion.h4
                             className="text-lg font-light tracking-[0.2em] uppercase border-b border-stone-200 pb-3"
@@ -373,7 +360,7 @@ const Orders = () => {
                                 Email Address
                               </div>
                               <div className="font-light text-lg tracking-wide group-hover/item:text-stone-700 transition-colors duration-300">
-                                {order.customer?.email}
+                                {order.attributes.customerEmail}
                               </div>
                             </motion.div>
 
@@ -386,7 +373,7 @@ const Orders = () => {
                                 Phone Number
                               </div>
                               <div className="font-light text-lg tracking-wide group-hover/item:text-stone-700 transition-colors duration-300">
-                                {order.customer?.phone}
+                                {order.attributes.customerPhone}
                               </div>
                             </motion.div>
 
@@ -399,13 +386,12 @@ const Orders = () => {
                                 Delivery Address
                               </div>
                               <div className="font-light text-lg leading-relaxed tracking-wide group-hover/item:text-stone-700 transition-colors duration-300">
-                                {order.customer?.address}
+                                {`${order.attributes.shippingAddress.street}, ${order.attributes.shippingAddress.city}`}
                               </div>
                             </motion.div>
                           </div>
                         </div>
 
-                        {/* Order Items */}
                         <div className="space-y-8">
                           <motion.h4
                             className="text-lg font-light tracking-[0.2em] uppercase border-b border-stone-200 pb-3"
@@ -416,14 +402,13 @@ const Orders = () => {
                           </motion.h4>
 
                           <div className="space-y-6">
-                            {order.items.map((item, i) => (
+                            {order.attributes.items.map((item, i) => (
                               <motion.div
                                 key={i}
                                 className="border border-stone-100 p-6 group/item hover:border-stone-200 transition-all duration-500 relative overflow-hidden"
                                 whileHover={{ y: -3 }}
                                 transition={{ duration: 0.3 }}
                               >
-                                {/* Item hover effect */}
                                 <motion.div
                                   className="absolute inset-0 bg-stone-50 opacity-0 group-hover/item:opacity-100 transition-opacity duration-500"
                                 />
@@ -431,15 +416,15 @@ const Orders = () => {
                                 <div className="relative z-10 flex justify-between items-start">
                                   <div className="flex-1 pr-6">
                                     <div className="font-light text-xl tracking-wide mb-2 group-hover/item:text-black transition-colors duration-300">
-                                      {item.product?.name}
+                                      {item.product.data.attributes.name}
                                     </div>
                                     <div className="text-stone-500 font-light tracking-[0.15em] text-sm">
-                                      Quantity: {item.qty} × ₦{item.price.toLocaleString()}
+                                      Quantity: {item.quantity} × ₦{item.product.data.attributes.price.toLocaleString()}
                                     </div>
                                   </div>
                                   <div className="text-right">
                                     <div className="font-light text-2xl tracking-wide group-hover/item:font-normal transition-all duration-300">
-                                      ₦{(item.price * item.qty).toLocaleString()}
+                                      ₦{(item.product.data.attributes.price * item.quantity).toLocaleString()}
                                     </div>
                                   </div>
                                 </div>
@@ -464,7 +449,6 @@ const Orders = () => {
         </div>
       </section>
 
-      {/* Minimalist Footer */}
       <footer className="py-16 border-t border-stone-100 relative overflow-hidden">
         <motion.div
           className="absolute inset-0"

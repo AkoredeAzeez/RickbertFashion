@@ -1,6 +1,13 @@
 import React from 'react';
+import { CheckoutFormData } from '../../actions/checkout.action';
 
-export default function ShippingInfo({ formData, errors, handleChange }) {
+interface ShippingInfoProps {
+  formData: CheckoutFormData;
+  errors: Partial<CheckoutFormData>;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export default function ShippingInfo({ formData, errors, handleChange }: ShippingInfoProps) {
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-light tracking-wide text-stone-900 mb-6 uppercase">Shipping Information</h3>

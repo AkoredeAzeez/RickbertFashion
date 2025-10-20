@@ -10,15 +10,15 @@ import OrderSummary from "../components/checkout/OrderSummary";
 import CheckoutActions from "../components/checkout/CheckoutActions";
 import "../styles/checkout.css";
 import { fadeUp, cardVariant, headerVariant } from "../styles/animations";
-import { initiatePayment } from "../actions/checkout.action";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+import { initiatePayment, CheckoutFormData } from "../actions/checkout.action";
+import { useCart } from "../state/CartContext";
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const { cart, total } = useCart();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CheckoutFormData>({
     name: "",
     email: "",
     phone: "",
@@ -26,29 +26,18 @@ const Checkout = () => {
     city: "",
     state: "",
   });
-  const [errors, setErrors] = useState({});
-  const [cartItems, setCartItems] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [errors, setErrors] = useState<Partial<CheckoutFormData>>({});
 
-  // Fetch cart from localStorage
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartItems(storedCart);
-    const sum = storedCart.reduce((acc, item) => acc + item.price * item.qty, 0);
-    setTotal(sum);
-  }, []);
-
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name]) {
+    if (errors[name as keyof CheckoutFormData]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
     }
   };
 
-  const validateStep = (step) => {
-    const newErrors = {};
+  const validateStep = (step: number) => {
+    const newErrors: Partial<CheckoutFormData> = {};
 
     if (step === 1) {
       if (!formData.name.trim()) newErrors.name = "Full name is required";
@@ -78,11 +67,11 @@ const Checkout = () => {
   };
 
   const handleCheckout = async () => {
-    if (!cartItems.length || !validateStep(1) || !validateStep(2)) return;
+    if (!cart.length || !validateStep(1) || !validateStep(2)) return;
 
     setIsLoading(true);
     try {
-      await initiatePayment(formData, cartItems, total);
+      await initiatePayment(formData, cart, total);
     } catch (err) {
       console.error("Checkout error:", err);
       alert("Payment initiation failed. Please try again.");
@@ -97,12 +86,11 @@ const Checkout = () => {
     { number: 3, title: "Payment", description: "Review and pay" },
   ];
 
-  if (!cartItems.length) return <EmptyCheckout onContinue={() => navigate('/home')} />;
+  if (!cart.length) return <EmptyCheckout onContinue={() => navigate('/home')} />;
 
   return (
     <div className="min-h-screen bg-stone-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <motion.div className="text-center mb-16" initial="hidden" animate="show" variants={headerVariant}>
           <h1 className="text-3xl md:text-4xl font-light tracking-wide text-stone-900 mb-4">
             CHECKOUT
@@ -110,13 +98,11 @@ const Checkout = () => {
           <div className="w-20 h-0.5 bg-stone-400 mx-auto" />
         </motion.div>
 
-        {/* Progress Steps */}
         <motion.div className="flex justify-center mb-12" initial="hidden" animate="show" variants={fadeUp}>
           <ProgressStepper steps={steps} currentStep={currentStep} />
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-12">
-          {/* Form Section */}
           <div className="lg:col-span-2">
             <motion.div
               className="bg-white border border-stone-200 p-8"
@@ -139,7 +125,7 @@ const Checkout = () => {
 
                 {currentStep === 3 && (
                   <motion.div key="step3" variants={cardVariant} initial="hidden" animate="show" exit="exit" className="space-y-6">
-                    <ReviewOrder cartItems={cartItems} />
+                    <ReviewOrder cartItems={cart} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -154,8 +140,7 @@ const Checkout = () => {
             </motion.div>
           </div>
 
-          {/* Order Summary */}
-          <OrderSummary cartItems={cartItems} total={total} />
+          <OrderSummary cartItems={cart} total={total} />
         </div>
       </div>
     </div>

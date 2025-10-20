@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { verifyPayment } from "../actions/checkout.action";
+import { Order } from "../types";
 import "../styles/payment-success.css";
 
 const PaymentSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [order, setOrder] = useState(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [showNotification, setShowNotification] = useState(false);
 
   const searchParams = new URLSearchParams(location.search);
@@ -24,17 +25,17 @@ const PaymentSuccess = () => {
         const verifiedOrder = await verifyPayment(reference);
         setOrder(verifiedOrder);
 
-        const { customer, items, amount } = verifiedOrder;
+        const { attributes: { customerName, customerEmail, customerPhone, shippingAddress, items, total } } = verifiedOrder;
         const message = `
 New Order 🚀
-Name: ${customer.name}
-Email: ${customer.email}
-Phone: ${customer.phone}
-Address: ${customer.address}
-Total: ₦${amount}
+Name: ${customerName}
+Email: ${customerEmail}
+Phone: ${customerPhone}
+Address: ${shippingAddress.street}, ${shippingAddress.city}, ${shippingAddress.state}
+Total: ₦${total}
 
 Items:
-${items.map(item => `- ${item.product.name} x${item.qty} = ₦${item.price * item.qty}`).join("\n")}
+${items.map(item => `- ${item.product.data.attributes.name} x${item.quantity} = ₦${item.product.data.attributes.price * item.quantity}`).join("\n")}
         `;
         const whatsappNumber = "2349043045934";
         const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
@@ -68,21 +69,21 @@ ${items.map(item => `- ${item.product.name} x${item.qty} = ₦${item.price * ite
 
       <div className="order-details">
         <h3>Customer Info</h3>
-        <p>Name: {order.customer.name}</p>
-        <p>Email: {order.customer.email}</p>
-        <p>Phone: {order.customer.phone}</p>
-        <p>Address: {order.customer.address}</p>
+        <p>Name: {order.attributes.customerName}</p>
+        <p>Email: {order.attributes.customerEmail}</p>
+        <p>Phone: {order.attributes.customerPhone}</p>
+        <p>Address: {`${order.attributes.shippingAddress.street}, ${order.attributes.shippingAddress.city}`}</p>
 
         <h3>Items</h3>
         <ul>
-          {order.items.map((item, i) => (
+          {order.attributes.items.map((item, i) => (
             <li key={i}>
-              {item.product.name} x {item.qty} = ₦{item.price * item.qty}
+              {item.product.data.attributes.name} x {item.quantity} = ₦{item.product.data.attributes.price * item.quantity}
             </li>
           ))}
         </ul>
 
-        <h3>Total: ₦{order.amount}</h3>
+        <h3>Total: ₦{order.attributes.total}</h3>
       </div>
     </div>
   );

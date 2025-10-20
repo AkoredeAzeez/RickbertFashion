@@ -1,6 +1,13 @@
 import React from 'react';
+import { CheckoutFormData } from '../../actions/checkout.action';
 
-export default function PersonalInfo({ formData, errors, handleChange }) {
+interface PersonalInfoProps {
+  formData: CheckoutFormData;
+  errors: Partial<CheckoutFormData>;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export default function PersonalInfo({ formData, errors, handleChange }: PersonalInfoProps) {
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-light tracking-wide text-stone-900 mb-6 uppercase">Personal Information</h3>

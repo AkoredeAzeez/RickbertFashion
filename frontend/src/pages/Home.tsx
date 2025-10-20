@@ -6,9 +6,10 @@ import HomeHero from "../components/home/HomeHero";
 import ProductGrid from "../components/home/ProductGrid";
 import FloatingCartButton from "../components/home/FloatingCartButton";
 import "../styles/home.css";
+import { Product } from '../types';
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
@@ -23,7 +24,6 @@ export default function Home() {
       setLoading(true);
       const res = await fetchProducts();
       if (Array.isArray(res)) setProducts(res);
-      else if (res && Array.isArray(res.products)) setProducts(res.products);
       else setProducts([]);
     } catch (err) {
       console.error("Failed to load products", err);
@@ -33,7 +33,7 @@ export default function Home() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: number) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       await deleteProduct(id);
@@ -43,23 +43,23 @@ export default function Home() {
     }
   };
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = (product: Product) => {
     addItem(product, 1);
   };
 
   const filteredProducts = products
     .filter((product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      product.attributes.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.attributes.description?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       switch (sortBy) {
         case "price-low":
-          return a.price - b.price;
+          return a.attributes.price - b.attributes.price;
         case "price-high":
-          return b.price - a.price;
+          return b.attributes.price - a.attributes.price;
         case "name":
-          return a.name.localeCompare(b.name);
+          return a.attributes.name.localeCompare(b.attributes.name);
         default:
           return 0;
       }

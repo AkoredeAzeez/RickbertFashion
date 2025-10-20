@@ -15,7 +15,7 @@ export default function Cart() {
       <div className="grid lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-6">
           {cart.map((i) => (
-            <CartItem key={i._id} item={i} updateQty={updateQty} removeItem={removeItem} />
+            <CartItem key={i.id} item={i} updateQty={updateQty} removeItem={removeItem} />
           ))}
         </div>
 

@@ -1,9 +1,23 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { Product } from "../types";
 
-const CartCtx = createContext();
+export interface CartItem extends Product {
+  qty: number;
+}
 
-export function CartProvider({ children }) {
-  const [cart, setCart] = useState(() => {
+interface ICartContext {
+  cart: CartItem[];
+  addItem: (product: Product, qty?: number) => void;
+  removeItem: (id: number) => void;
+  updateQty: (id: number, qty: number) => void;
+  total: number;
+  clearCart: () => void;
+}
+
+const CartCtx = createContext<ICartContext | undefined>(undefined);
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
   });
@@ -12,9 +26,9 @@ export function CartProvider({ children }) {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  const addItem = (product, qty = 1) => {
+  const addItem = (product: Product, qty = 1) => {
     setCart((prev) => {
-      const idx = prev.findIndex((i) => i._id === product._id);
+      const idx = prev.findIndex((i) => i.id === product.id);
       if (idx !== -1) {
         const next = [...prev];
         next[idx].qty += qty;
@@ -24,12 +38,12 @@ export function CartProvider({ children }) {
     });
   };
 
-  const removeItem = (id) => setCart((prev) => prev.filter((i) => i._id !== id));
-  const updateQty = (id, qty) =>
-    setCart((prev) => prev.map((i) => (i._id === id ? { ...i, qty } : i)));
+  const removeItem = (id: number) => setCart((prev) => prev.filter((i) => i.id !== id));
+  const updateQty = (id: number, qty: number) =>
+    setCart((prev) => prev.map((i) => (i.id === id ? { ...i, qty } : i)));
   const clearCart = () => setCart([]);
 
-  const total = useMemo(() => cart.reduce((s, i) => s + i.price * i.qty, 0), [cart]);
+  const total = useMemo(() => cart.reduce((s, i) => s + i.attributes.price * i.qty, 0), [cart]);
 
   return (
     <CartCtx.Provider value={{ cart, addItem, removeItem, updateQty, total, clearCart }}>
@@ -38,5 +52,10 @@ export function CartProvider({ children }) {
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useCart = () => useContext(CartCtx);
+export const useCart = () => {
+    const context = useContext(CartCtx);
+    if (context === undefined) {
+        throw new Error('useCart must be used within a CartProvider');
+    }
+    return context;
+};

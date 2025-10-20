@@ -1,6 +1,12 @@
 import React from 'react';
+import { CartItem } from '../../state/CartContext';
 
-export default function OrderSummary({ cartItems, total }) {
+interface OrderSummaryProps {
+  cartItems: CartItem[];
+  total: number;
+}
+
+export default function OrderSummary({ cartItems, total }: OrderSummaryProps) {
   return (
     <div className="bg-white border border-stone-200 p-8 sticky top-24">
       <h3 className="text-xl font-light tracking-wide text-stone-900 mb-6 uppercase">Order Summary</h3>

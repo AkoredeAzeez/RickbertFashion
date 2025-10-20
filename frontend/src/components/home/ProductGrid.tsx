@@ -1,7 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import ProductCard from "./ProductCard";
+import { Product } from "../../types";
 
-export default function ProductGrid({ products, loading, onAdd, onDelete }) {
+interface ProductGridProps {
+    products: Product[];
+    loading: boolean;
+    onAdd: (product: Product) => void;
+    onDelete: (id: number) => void;
+}
+
+export default function ProductGrid({ products, loading, onAdd, onDelete }: ProductGridProps) {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-32">
@@ -14,7 +22,7 @@ export default function ProductGrid({ products, loading, onAdd, onDelete }) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
       {products.length > 0 ? (
         products.map((product, index) => (
-          <ProductCard key={product._id} product={product} index={index} onAdd={onAdd} onDelete={onDelete} />
+          <ProductCard key={product.id} product={product} index={index} onAdd={onAdd} onDelete={onDelete} />
         ))
       ) : (
         <div className="col-span-full text-center py-20">
