@@ -75,7 +75,7 @@ export interface ProductAttributes {
   name: string
   description: string
   price: number
-  images: StrapiCollectionResponse<Media>
+  images: Media[]
   createdAt: string
   updatedAt: string
   publishedAt: string | null

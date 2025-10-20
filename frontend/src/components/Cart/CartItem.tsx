@@ -1,3 +1,4 @@
+import { imageUrlBuilder } from '@/actions/products.action'
 import { CartItem as CartItemType } from '@/state/CartContext'
 
 interface CartItemProps {
@@ -11,7 +12,8 @@ export default function CartItem({
   updateQty,
   removeItem,
 }: CartItemProps) {
-  const imageUrl = item.images?.data?.[0]?.url || '/placeholder.png'
+  const imageUrl = imageUrlBuilder(item.images[0]?.url) || '/placeholder.png'
+
   return (
     <div className='bg-white p-4 rounded-xl shadow flex gap-4 items-center'>
       <img

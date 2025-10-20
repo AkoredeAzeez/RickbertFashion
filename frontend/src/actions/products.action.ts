@@ -88,3 +88,8 @@ export async function createProduct(
   )
   return productRes.data.data
 }
+
+export function imageUrlBuilder(url: string): string {
+  if (url.startsWith('http')) return url
+  return `${BACKEND_URL}${url}`
+}

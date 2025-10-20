@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Product } from '../../types'
+import { imageUrlBuilder } from '@/actions/products.action'
 
 interface ProductCardProps {
   product: Product
@@ -14,7 +15,7 @@ export default function ProductCard({
   onAdd,
   onDelete,
 }: ProductCardProps) {
-  const imageUrl = product.images?.data?.[0]?.url || '/placeholder.png'
+  const imageUrl = imageUrlBuilder(product.images[0]?.url) || '/placeholder.png'
 
   return (
     <motion.div
