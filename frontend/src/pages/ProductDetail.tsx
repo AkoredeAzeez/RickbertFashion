@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { fetchProduct } from '../actions/products.action'
-import { useCart } from '../state/CartContext'
-import { Product } from '../types'
+import { fetchProduct } from '@/actions/products.action'
+import { useCart } from '@/state/CartContext'
+import { Product } from '@/types'
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>()

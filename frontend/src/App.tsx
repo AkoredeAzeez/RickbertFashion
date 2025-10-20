@@ -1,4 +1,3 @@
-import React from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -42,7 +41,7 @@ export default function App() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [isNavOpen])
 
-  const toggleNav = (e) => {
+  const toggleNav = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     setIsNavOpen(!isNavOpen)
   }

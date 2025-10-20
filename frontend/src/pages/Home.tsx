@@ -1,12 +1,11 @@
-import React from 'react'
 import { useEffect, useState } from 'react'
-import { fetchProducts, deleteProduct } from '../actions/products.action'
-import { useCart } from '../state/CartContext'
-import HomeHero from '../components/home/HomeHero'
-import ProductGrid from '../components/home/ProductGrid'
-import FloatingCartButton from '../components/home/FloatingCartButton'
-import '../styles/home.css'
-import { Product } from '../types'
+import { fetchProducts, deleteProduct } from '@/actions/products.action'
+import { useCart } from '@/state/CartContext'
+import HomeHero from '@/components/home/HomeHero'
+import ProductGrid from '@/components/home/ProductGrid'
+import FloatingCartButton from '@/components/home/FloatingCartButton'
+import '@/styles/home.css'
+import { Product } from '@/types'
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([])

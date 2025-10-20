@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { verifyPayment } from '../actions/checkout.action'
-import { Order } from '../types'
-import '../styles/payment-success.css'
+import { verifyPayment } from '@/actions/checkout.action'
+import { Order } from '@/types'
+import '@/styles/payment-success.css'
 
 const PaymentSuccess = () => {
   const location = useLocation()

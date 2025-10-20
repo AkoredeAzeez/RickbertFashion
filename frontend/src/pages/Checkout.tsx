@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import ProgressStepper from '../components/checkout/ProgressStepper'
-import PersonalInfo from '../components/checkout/PersonalInfo'
-import ShippingInfo from '../components/checkout/ShippingInfo'
-import ReviewOrder from '../components/checkout/ReviewOrder'
-import EmptyCheckout from '../components/checkout/EmptyCheckout'
-import OrderSummary from '../components/checkout/OrderSummary'
-import CheckoutActions from '../components/checkout/CheckoutActions'
-import '../styles/checkout.css'
-import { fadeUp, cardVariant, headerVariant } from '../styles/animations'
-import { initiatePayment, CheckoutFormData } from '../actions/checkout.action'
-import { useCart } from '../state/CartContext'
+import ProgressStepper from '@/components/checkout/ProgressStepper'
+import PersonalInfo from '@/components/checkout/PersonalInfo'
+import ShippingInfo from '@/components/checkout/ShippingInfo'
+import ReviewOrder from '@/components/checkout/ReviewOrder'
+import EmptyCheckout from '@/components/checkout/EmptyCheckout'
+import OrderSummary from '@/components/checkout/OrderSummary'
+import CheckoutActions from '@/components/checkout/CheckoutActions'
+import '@/styles/checkout.css'
+import { fadeUp, cardVariant, headerVariant } from '@/styles/animations'
+import { initiatePayment, CheckoutFormData } from '@/actions/checkout.action'
+import { useCart } from '@/state/CartContext'
 
 const Checkout = () => {
   const navigate = useNavigate()
@@ -72,7 +72,15 @@ const Checkout = () => {
 
     setIsLoading(true)
     try {
-      await initiatePayment(formData, cart, total)
+      const checkoutCartItems = cart.map((item) => ({
+        _id: String(item.id),
+        name: item.attributes.name,
+        price: item.attributes.price,
+        images: item.attributes.images.data.map((img) => img.attributes.url),
+        qty: item.qty,
+        description: item.attributes.description,
+      }))
+      await initiatePayment(formData, checkoutCartItems, total)
     } catch (err) {
       console.error('Checkout error:', err)
       alert('Payment initiation failed. Please try again.')

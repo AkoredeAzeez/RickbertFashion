@@ -1,6 +1,13 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { hoverTap, spinnerVariant } from '../../styles/animations'
+
+interface CheckoutActionsProps {
+  currentStep: number
+  handlePrevStep: () => void
+  handleNextStep: () => void
+  handleCheckout: () => void
+  isLoading: boolean
+}
 
 export default function CheckoutActions({
   currentStep,
@@ -8,7 +15,7 @@ export default function CheckoutActions({
   handleNextStep,
   handleCheckout,
   isLoading,
-}) {
+}: CheckoutActionsProps) {
   return (
     <div className='flex justify-between mt-8 pt-8 border-t border-stone-200'>
       <motion.button

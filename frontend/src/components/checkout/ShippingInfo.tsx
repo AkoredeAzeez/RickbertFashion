@@ -1,5 +1,4 @@
-import React from 'react'
-import { CheckoutFormData } from '../../actions/checkout.action'
+import { CheckoutFormData } from '@/actions/checkout.action'
 
 interface ShippingInfoProps {
   formData: CheckoutFormData

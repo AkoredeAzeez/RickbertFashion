@@ -1,5 +1,4 @@
-import React from 'react'
-import { CartItem as CartItemType } from '../state/CartContext'
+import { CartItem as CartItemType } from '@/state/CartContext'
 
 interface CartItemProps {
   item: CartItemType

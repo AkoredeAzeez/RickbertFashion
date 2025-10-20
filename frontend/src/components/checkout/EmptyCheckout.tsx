@@ -1,7 +1,10 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 
-export default function EmptyCheckout({ onContinue }) {
+export default function EmptyCheckout({
+  onContinue,
+}: {
+  onContinue: () => void
+}) {
   return (
     <div className='min-h-screen bg-stone-50 flex items-center justify-center px-4'>
       <motion.div
