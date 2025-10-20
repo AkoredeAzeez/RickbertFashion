@@ -76,7 +76,7 @@ const Checkout = () => {
         _id: String(item.id),
         name: item.name,
         price: item.price,
-        images: item.images.data.map((img) => img.url),
+        images: item.images.map((img) => img.url),
         qty: item.qty,
         description: item.description,
       }))
