@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { verifyPayment } from "../actions/checkout.action";
 import "../styles/payment-success.css";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const PaymentSuccess = () => {
   const location = useLocation();
@@ -11,9 +9,8 @@ const PaymentSuccess = () => {
   const [order, setOrder] = useState(null);
   const [showNotification, setShowNotification] = useState(false);
 
-  // Get reference from URL
   const searchParams = new URLSearchParams(location.search);
-const reference = searchParams.get("reference") || searchParams.get("trxref");
+  const reference = searchParams.get("reference") || searchParams.get("trxref");
 
   useEffect(() => {
     if (!reference) {
@@ -24,19 +21,10 @@ const reference = searchParams.get("reference") || searchParams.get("trxref");
 
     const handlePaymentSuccess = async () => {
       try {
-        // 🔹 Step 1: Verify payment
-        const verifyRes = await axios.get(`${BACKEND_URL}/api/checkout/paystack/verify/${reference}`);
+        const verifiedOrder = await verifyPayment(reference);
+        setOrder(verifiedOrder);
 
-        if (verifyRes.data.status !== "success") {
-          alert("Payment verification failed. Please contact support.");
-          navigate("/checkout");
-          return;
-        }
-
-        setOrder(verifyRes.data.order);
-
-        // 🔹 Step 2: Send WhatsApp message
-        const { customer, items, amount } = verifyRes.data.order;
+        const { customer, items, amount } = verifiedOrder;
         const message = `
 New Order 🚀
 Name: ${customer.name}
@@ -56,7 +44,7 @@ ${items.map(item => `- ${item.product.name} x${item.qty} = ₦${item.price * ite
         setTimeout(() => setShowNotification(false), 4000);
 
       } catch (err) {
-        console.error("Payment success error:", err.response?.data || err.message);
+        console.error("Payment success error:", err);
         alert("Something went wrong while processing your order.");
         navigate("/checkout");
       }

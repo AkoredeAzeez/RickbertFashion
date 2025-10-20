@@ -1,10 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dctdaad7d/image/upload";
-const UPLOAD_PRESET = "rickbertfashion";
+import { createProduct } from "../actions/products.action";
 
 const Upload = () => {
   const [name, setName] = useState("");
@@ -23,10 +19,8 @@ const Upload = () => {
     const selectedFiles = Array.from(e.target.files);
     setFiles(selectedFiles);
 
-    // Clean up old preview URLs
     previews.forEach(url => URL.revokeObjectURL(url));
 
-    // Generate new preview URLs
     const previewUrls = selectedFiles.map((file) => URL.createObjectURL(file));
     setPreviews(previewUrls);
   };
@@ -34,10 +28,9 @@ const Upload = () => {
   const removeImage = (indexToRemove) => {
     const newFiles = files.filter((_, index) => index !== indexToRemove);
     const newPreviews = previews.filter((_, index) => index !== indexToRemove);
-    
-    // Clean up removed preview URL
+
     URL.revokeObjectURL(previews[indexToRemove]);
-    
+
     setFiles(newFiles);
     setPreviews(newPreviews);
   };
@@ -50,51 +43,17 @@ const Upload = () => {
     setUploadProgress({});
 
     try {
-      const uploadedUrls = [];
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", UPLOAD_PRESET);
-        formData.append("folder", "products");
-
-        console.log(`➡ Uploading ${file.name} to Cloudinary...`);
-
-        const cloudRes = await axios.post(CLOUDINARY_URL, formData, {
-          onUploadProgress: (progressEvent) => {
-            const percent = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setUploadProgress(prev => ({
-              ...prev,
-              [i]: percent
-            }));
-            console.log(`   ${file.name}: ${percent}% uploaded`);
-          },
-        });
-
-        console.log(`✅ Uploaded ${file.name}:`, cloudRes.data.secure_url);
-        uploadedUrls.push(cloudRes.data.secure_url);
-      }
-
-      // Submit product to backend
-      const productRes = await axios.post(`${API_URL}/api/products`, {
+      await createProduct({
         name,
         price: Number(price),
         description,
         sizes,
         colors,
         stock,
-        images: uploadedUrls,
-      });
+      }, files, setUploadProgress);
 
-      console.log("🎉 Product saved to backend:", productRes.data);
-      
-      // Show success animation
       setShowSuccess(true);
-      
-      // Reset form after success animation
+
       setTimeout(() => {
         setName("");
         setPrice("");
@@ -109,7 +68,7 @@ const Upload = () => {
       }, 2000);
 
     } catch (error) {
-      console.error("❌ Upload failed:", error.response || error.message || error);
+      console.error("❌ Upload failed:", error);
       alert("❌ Failed to upload product");
     } finally {
       setLoading(false);
@@ -185,7 +144,7 @@ const Upload = () => {
               <label className="block text-sm font-light tracking-wide text-stone-700 uppercase mb-4">
                 Product Images *
               </label>
-              
+
               <motion.div
                 className="border-2 border-dashed border-stone-300 p-8 text-center hover:border-stone-400 transition-colors duration-300 cursor-pointer"
                 whileHover={{ scale: 1.01 }}
@@ -236,7 +195,7 @@ const Upload = () => {
                           alt={`Preview ${idx + 1}`}
                           className="w-full h-full object-cover border border-stone-200 transition-transform duration-300 group-hover:scale-105"
                         />
-                        
+
                         {/* Upload Progress */}
                         {loading && uploadProgress[idx] !== undefined && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -375,11 +334,10 @@ const Upload = () => {
               <button
                 type="submit"
                 disabled={loading || !files.length}
-                className={`w-full relative group overflow-hidden py-4 px-6 border font-light tracking-[0.2em] text-sm text-center transition-all duration-500 uppercase ${
-                  loading || !files.length
+                className={`w-full relative group overflow-hidden py-4 px-6 border font-light tracking-[0.2em] text-sm text-center transition-all duration-500 uppercase ${loading || !files.length
                     ? 'border-stone-300 text-stone-400 cursor-not-allowed'
                     : 'border-stone-900 text-stone-900 hover:text-white'
-                }`}
+                  }`}
               >
                 <motion.div
                   className="absolute inset-0 bg-stone-900"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { fetchProduct } from "../lib/api";
+import { fetchProduct } from "../actions/products.action";
 import { useCart } from "../state/CartContext";
 
 export default function ProductDetail() {

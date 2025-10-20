@@ -9,7 +9,8 @@ import EmptyCheckout from "../components/checkout/EmptyCheckout";
 import OrderSummary from "../components/checkout/OrderSummary";
 import CheckoutActions from "../components/checkout/CheckoutActions";
 import "../styles/checkout.css";
-import { fadeUp, cardVariant, headerVariant} from "../styles/animations";
+import { fadeUp, cardVariant, headerVariant } from "../styles/animations";
+import { initiatePayment } from "../actions/checkout.action";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -48,14 +49,14 @@ const Checkout = () => {
 
   const validateStep = (step) => {
     const newErrors = {};
-    
+
     if (step === 1) {
       if (!formData.name.trim()) newErrors.name = "Full name is required";
       if (!formData.email.trim()) newErrors.email = "Email is required";
       else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
       if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
     }
-    
+
     if (step === 2) {
       if (!formData.address.trim()) newErrors.address = "Address is required";
       if (!formData.city.trim()) newErrors.city = "City is required";
@@ -81,26 +82,7 @@ const Checkout = () => {
 
     setIsLoading(true);
     try {
-      const totalAmountKobo = total * 100;
-      const response = await fetch(`${BACKEND_URL}/api/checkout/paystack/initiate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          amount: totalAmountKobo,
-          cart: cartItems,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data && data.authorization_url && data.reference) {
-        window.location.href = data.authorization_url;
-      } else {
-        throw new Error('Invalid response from payment gateway');
-      }
+      await initiatePayment(formData, cartItems, total);
     } catch (err) {
       console.error("Checkout error:", err);
       alert("Payment initiation failed. Please try again.");
@@ -143,11 +125,11 @@ const Checkout = () => {
               transition={{ duration: 0.8, delay: 0.3 }}
             >
               <AnimatePresence mode="wait">
-                  {currentStep === 1 && (
-                    <motion.div key="step1" variants={cardVariant} initial="hidden" animate="show" exit="exit" className="space-y-6">
-                      <PersonalInfo formData={formData} errors={errors} handleChange={handleChange} />
-                    </motion.div>
-                  )}
+                {currentStep === 1 && (
+                  <motion.div key="step1" variants={cardVariant} initial="hidden" animate="show" exit="exit" className="space-y-6">
+                    <PersonalInfo formData={formData} errors={errors} handleChange={handleChange} />
+                  </motion.div>
+                )}
 
                 {currentStep === 2 && (
                   <motion.div key="step2" variants={cardVariant} initial="hidden" animate="show" exit="exit" className="space-y-6">
@@ -178,6 +160,6 @@ const Checkout = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Checkout;

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect, useState } from "react";
-import { fetchProducts, deleteProduct } from "../lib/api";
+import { fetchProducts, deleteProduct } from "../actions/products.action";
 import { useCart } from "../state/CartContext";
 import HomeHero from "../components/home/HomeHero";
 import ProductGrid from "../components/home/ProductGrid";
@@ -97,9 +97,8 @@ export default function Home() {
               <button
                 key={option.value}
                 onClick={() => setSortBy(option.value)}
-                className={`px-6 py-2 text-sm font-light tracking-wide transition-all duration-300 ${
-                  sortBy === option.value ? "bg-black text-white" : "bg-white text-black border border-stone-200 hover:border-black"
-                }`}
+                className={`px-6 py-2 text-sm font-light tracking-wide transition-all duration-300 ${sortBy === option.value ? "bg-black text-white" : "bg-white text-black border border-stone-200 hover:border-black"
+                  }`}
               >
                 {option.label}
               </button>

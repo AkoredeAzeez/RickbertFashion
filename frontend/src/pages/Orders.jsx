@@ -1,40 +1,42 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+import { fetchOrders } from "../actions/orders.action";
+
+// ... (keep other imports)
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const headerRef = useRef(null);
-  
+
   const isInView = useInView(headerRef, { once: true });
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchOrders();
+        setOrders(data);
+      } catch (error) {
+        console.error("Failed to fetch orders:", error);
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadOrders();
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/orders`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setOrders(data);
-      } catch (err) {
-        console.error("Error fetching orders:", err.message);
-      } finally {
-        setLoading(false);
-      }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
     };
-    fetchOrders();
   }, []);
 
   const getStatusStyles = (status) => {
@@ -71,14 +73,14 @@ const Orders = () => {
           }}
           transition={{ duration: 2, repeat: Infinity }}
         />
-        
+
         <div className="text-center">
           <motion.div
             className="w-16 h-16 border-2 border-black border-t-transparent rounded-full mx-auto mb-8"
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           />
-          <motion.p 
+          <motion.p
             className="text-black font-light tracking-[0.3em] text-sm uppercase"
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -106,7 +108,7 @@ const Orders = () => {
       />
 
       {/* Header Section */}
-      <motion.section 
+      <motion.section
         ref={headerRef}
         className="py-24 md:py-32 relative overflow-hidden"
       >
@@ -135,7 +137,7 @@ const Orders = () => {
             >
               ORDER MANAGEMENT
             </motion.h1>
-            
+
             <motion.div
               className="w-32 h-0.5 bg-black mx-auto mb-6"
               initial={{ scaleX: 0 }}
@@ -167,7 +169,7 @@ const Orders = () => {
             >
               <motion.div
                 className="text-3xl md:text-4xl font-thin mb-3 tracking-wide"
-                animate={{ 
+                animate={{
                   textShadow: ["0 0 0px rgba(0,0,0,0.3)", "0 0 10px rgba(0,0,0,0.1)", "0 0 0px rgba(0,0,0,0.3)"]
                 }}
                 transition={{ duration: 3, repeat: Infinity }}
@@ -189,7 +191,7 @@ const Orders = () => {
             >
               <motion.div
                 className="text-3xl md:text-4xl font-thin mb-3 tracking-wide text-black"
-                animate={{ 
+                animate={{
                   textShadow: ["0 0 0px rgba(0,0,0,0.3)", "0 0 10px rgba(0,0,0,0.1)", "0 0 0px rgba(0,0,0,0.3)"]
                 }}
                 transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
@@ -211,7 +213,7 @@ const Orders = () => {
             >
               <motion.div
                 className="text-3xl md:text-4xl font-thin mb-3 tracking-wide text-stone-700"
-                animate={{ 
+                animate={{
                   textShadow: ["0 0 0px rgba(0,0,0,0.3)", "0 0 10px rgba(0,0,0,0.1)", "0 0 0px rgba(0,0,0,0.3)"]
                 }}
                 transition={{ duration: 3, repeat: Infinity, delay: 1 }}
@@ -233,7 +235,7 @@ const Orders = () => {
             >
               <motion.div
                 className="text-2xl md:text-3xl font-thin mb-3 tracking-wide"
-                animate={{ 
+                animate={{
                   textShadow: ["0 0 0px rgba(0,0,0,0.3)", "0 0 10px rgba(0,0,0,0.1)", "0 0 0px rgba(0,0,0,0.3)"]
                 }}
                 transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
@@ -264,7 +266,7 @@ const Orders = () => {
             >
               <motion.div
                 className="text-6xl md:text-8xl font-thin text-stone-200 mb-8"
-                animate={{ 
+                animate={{
                   scale: [1, 1.05, 1]
                 }}
                 transition={{ duration: 4, repeat: Infinity }}
@@ -333,7 +335,7 @@ const Orders = () => {
                             })}
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-6">
                           <span className={`px-6 py-2 text-xs font-light tracking-[0.2em] uppercase border transition-all duration-300 ${getStatusStyles(order.status)}`}>
                             {order.status}
@@ -360,9 +362,9 @@ const Orders = () => {
                           >
                             Customer Details
                           </motion.h4>
-                          
+
                           <div className="space-y-6">
-                            <motion.div 
+                            <motion.div
                               className="group/item"
                               whileHover={{ x: 10 }}
                               transition={{ duration: 0.3 }}
@@ -374,8 +376,8 @@ const Orders = () => {
                                 {order.customer?.email}
                               </div>
                             </motion.div>
-                            
-                            <motion.div 
+
+                            <motion.div
                               className="group/item"
                               whileHover={{ x: 10 }}
                               transition={{ duration: 0.3 }}
@@ -387,8 +389,8 @@ const Orders = () => {
                                 {order.customer?.phone}
                               </div>
                             </motion.div>
-                            
-                            <motion.div 
+
+                            <motion.div
                               className="group/item"
                               whileHover={{ x: 10 }}
                               transition={{ duration: 0.3 }}
@@ -412,7 +414,7 @@ const Orders = () => {
                           >
                             Items Ordered
                           </motion.h4>
-                          
+
                           <div className="space-y-6">
                             {order.items.map((item, i) => (
                               <motion.div
@@ -425,7 +427,7 @@ const Orders = () => {
                                 <motion.div
                                   className="absolute inset-0 bg-stone-50 opacity-0 group-hover/item:opacity-100 transition-opacity duration-500"
                                 />
-                                
+
                                 <div className="relative z-10 flex justify-between items-start">
                                   <div className="flex-1 pr-6">
                                     <div className="font-light text-xl tracking-wide mb-2 group-hover/item:text-black transition-colors duration-300">
@@ -441,7 +443,7 @@ const Orders = () => {
                                     </div>
                                   </div>
                                 </div>
-                                
+
                                 <motion.div
                                   className="w-full h-0.5 bg-stone-200 mt-4 opacity-0 group-hover/item:opacity-100 transition-opacity duration-500"
                                   initial={{ scaleX: 0 }}
@@ -476,7 +478,7 @@ const Orders = () => {
           }}
           transition={{ duration: 10, repeat: Infinity }}
         />
-        
+
         <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

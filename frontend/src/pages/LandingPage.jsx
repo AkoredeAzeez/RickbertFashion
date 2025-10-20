@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import logo from "../assets/rf.jpg";
-import { fetchProducts } from "../lib/api";
+import { fetchProducts } from "../actions/products.action";
 
 export default function LandingPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -88,7 +88,7 @@ export default function LandingPage() {
       />
 
       {/* Advanced hero section with full-screen experience */}
-      <motion.section 
+      <motion.section
         ref={heroRef}
         className="h-screen relative overflow-hidden"
         style={{ scale }}
@@ -142,7 +142,7 @@ export default function LandingPage() {
           />
         ))}
 
-        <motion.div 
+        <motion.div
           className="relative h-full flex flex-col items-center justify-center text-center px-4"
           style={{ y: yText }}
         >
@@ -151,9 +151,9 @@ export default function LandingPage() {
             className="mb-12 relative"
             initial={{ scale: 0, rotate: -180, opacity: 0 }}
             animate={isInView ? { scale: 1, rotate: 0, opacity: 1 } : {}}
-            transition={{ 
-              duration: 2, 
-              type: "spring", 
+            transition={{
+              duration: 2,
+              type: "spring",
               stiffness: 100,
               delay: 0.5
             }}
@@ -191,7 +191,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 100 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 1.5, delay: 1 }}
-              style={{ 
+              style={{
                 fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
                 textShadow: '0 0 30px rgba(255,255,255,0.3)'
               }}
@@ -208,7 +208,7 @@ export default function LandingPage() {
                 </motion.span>
               ))}
             </motion.h1>
-            
+
             <motion.div
               className="h-1 w-32 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mb-6"
               initial={{ scaleX: 0 }}
@@ -262,7 +262,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Slide indicators */}
-          <motion.div 
+          <motion.div
             className="absolute bottom-12 flex space-x-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -272,9 +272,8 @@ export default function LandingPage() {
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-12 h-0.5 transition-all duration-500 ${
-                  currentSlide === index ? 'bg-white' : 'bg-white/30'
-                }`}
+                className={`w-12 h-0.5 transition-all duration-500 ${currentSlide === index ? 'bg-white' : 'bg-white/30'
+                  }`}
               />
             ))}
           </motion.div>
@@ -293,7 +292,7 @@ export default function LandingPage() {
       {/* Revolutionary featured products section */}
       <section className="py-32 bg-white text-black relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(0,0,0,0.02)_0%,transparent_50%)]" />
-        
+
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <motion.div
             className="text-center mb-20"
@@ -351,12 +350,12 @@ export default function LandingPage() {
                       className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105"
                       loading="lazy"
                     />
-                    
+
                     {/* Overlay gradient on hover - more subtle on mobile */}
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 md:from-black/50"
                     />
-                    
+
                     {/* Interactive elements for desktop, always visible on mobile */}
                     <motion.div
                       className="absolute top-4 md:top-6 right-4 md:right-6 bg-white/95 backdrop-blur-sm text-black px-3 py-2 md:px-4 text-xs md:text-sm font-light tracking-wide opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500 shadow-sm"
@@ -405,7 +404,7 @@ export default function LandingPage() {
                     >
                       {product.name}
                     </motion.h3>
-                    
+
                     {/* Decorative line - more prominent on desktop */}
                     <motion.div
                       className="w-8 md:w-12 h-0.5 bg-black mx-auto opacity-30 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500"
@@ -484,7 +483,7 @@ export default function LandingPage() {
               <br />
               <span className="italic text-white/80">we architect dreams into wearable art."</span>
             </motion.h3>
-            
+
             <motion.div
               className="w-24 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mb-8"
               initial={{ scaleX: 0 }}
@@ -492,7 +491,7 @@ export default function LandingPage() {
               transition={{ duration: 2, delay: 0.5 }}
               viewport={{ once: true }}
             />
-            
+
             <motion.p
               className="text-white/60 font-light tracking-[0.3em] text-sm uppercase"
               initial={{ opacity: 0 }}
