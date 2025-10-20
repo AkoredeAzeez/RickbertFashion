@@ -1,104 +1,122 @@
 import React from 'react'
-import { useEffect, useState } from "react";
-import { fetchProducts, deleteProduct } from "../actions/products.action";
-import { useCart } from "../state/CartContext";
-import HomeHero from "../components/home/HomeHero";
-import ProductGrid from "../components/home/ProductGrid";
-import FloatingCartButton from "../components/home/FloatingCartButton";
-import "../styles/home.css";
-import { Product } from '../types';
+import { useEffect, useState } from 'react'
+import { fetchProducts, deleteProduct } from '../actions/products.action'
+import { useCart } from '../state/CartContext'
+import HomeHero from '../components/home/HomeHero'
+import ProductGrid from '../components/home/ProductGrid'
+import FloatingCartButton from '../components/home/FloatingCartButton'
+import '../styles/home.css'
+import { Product } from '../types'
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
-  const { addItem } = useCart();
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [sortBy, setSortBy] = useState('newest')
+  const { addItem } = useCart()
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    loadProducts()
+  }, [])
 
   const loadProducts = async () => {
     try {
-      setLoading(true);
-      const res = await fetchProducts();
-      if (Array.isArray(res)) setProducts(res);
-      else setProducts([]);
+      setLoading(true)
+      const res = await fetchProducts()
+      if (Array.isArray(res)) setProducts(res)
+      else setProducts([])
     } catch (err) {
-      console.error("Failed to load products", err);
-      setProducts([]);
+      console.error('Failed to load products', err)
+      setProducts([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm('Are you sure you want to delete this product?')) return
     try {
-      await deleteProduct(id);
-      loadProducts();
+      await deleteProduct(id)
+      loadProducts()
     } catch (err) {
-      console.error("Failed to delete product", err);
+      console.error('Failed to delete product', err)
     }
-  };
+  }
 
   const handleAddToCart = (product: Product) => {
-    addItem(product, 1);
-  };
+    addItem(product, 1)
+  }
 
   const filteredProducts = products
-    .filter((product) =>
-      product.attributes.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.attributes.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    .filter(
+      (product) =>
+        product.attributes.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        product.attributes.description
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()),
     )
     .sort((a, b) => {
       switch (sortBy) {
-        case "price-low":
-          return a.attributes.price - b.attributes.price;
-        case "price-high":
-          return b.attributes.price - a.attributes.price;
-        case "name":
-          return a.attributes.name.localeCompare(b.attributes.name);
+        case 'price-low':
+          return a.attributes.price - b.attributes.price
+        case 'price-high':
+          return b.attributes.price - a.attributes.price
+        case 'name':
+          return a.attributes.name.localeCompare(b.attributes.name)
         default:
-          return 0;
+          return 0
       }
-    });
+    })
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className='min-h-screen bg-stone-50'>
       <FloatingCartButton />
       <HomeHero />
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-12 space-y-6">
-          <div className="relative max-w-md mx-auto">
+      <div className='max-w-7xl mx-auto px-6 py-12'>
+        <div className='mb-12 space-y-6'>
+          <div className='relative max-w-md mx-auto'>
             <input
-              type="text"
-              placeholder="Search products..."
+              type='text'
+              placeholder='Search products...'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-6 py-4 bg-white border border-stone-200 focus:border-black focus:outline-none transition-colors duration-300 font-light tracking-wide text-sm"
+              className='w-full px-6 py-4 bg-white border border-stone-200 focus:border-black focus:outline-none transition-colors duration-300 font-light tracking-wide text-sm'
             />
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-stone-400">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <div className='absolute right-4 top-1/2 transform -translate-y-1/2 text-stone-400'>
+              <svg
+                className='w-5 h-5'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={1.5}
+                  d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+                />
               </svg>
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className='flex flex-wrap justify-center gap-4'>
             {[
-              { value: "newest", label: "Newest" },
-              { value: "price-low", label: "Price: Low to High" },
-              { value: "price-high", label: "Price: High to Low" },
-              { value: "name", label: "Alphabetical" },
+              { value: 'newest', label: 'Newest' },
+              { value: 'price-low', label: 'Price: Low to High' },
+              { value: 'price-high', label: 'Price: High to Low' },
+              { value: 'name', label: 'Alphabetical' },
             ].map((option) => (
               <button
                 key={option.value}
                 onClick={() => setSortBy(option.value)}
-                className={`px-6 py-2 text-sm font-light tracking-wide transition-all duration-300 ${sortBy === option.value ? "bg-black text-white" : "bg-white text-black border border-stone-200 hover:border-black"
-                  }`}
+                className={`px-6 py-2 text-sm font-light tracking-wide transition-all duration-300 ${
+                  sortBy === option.value
+                    ? 'bg-black text-white'
+                    : 'bg-white text-black border border-stone-200 hover:border-black'
+                }`}
               >
                 {option.label}
               </button>
@@ -106,8 +124,13 @@ export default function Home() {
           </div>
         </div>
 
-        <ProductGrid products={filteredProducts} loading={loading} onAdd={handleAddToCart} onDelete={handleDelete} />
+        <ProductGrid
+          products={filteredProducts}
+          loading={loading}
+          onAdd={handleAddToCart}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
-  );
+  )
 }

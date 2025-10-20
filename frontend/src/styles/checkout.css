@@ -38,18 +38,30 @@
   color: white;
   padding: 16px 24px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   font-weight: bold;
   z-index: 1000;
   animation: slideIn 0.5s forwards, slideOut 0.5s 2.5s forwards;
 }
 
 @keyframes slideIn {
-  from { right: -300px; opacity: 0; }
-  to { right: 20px; opacity: 1; }
+  from {
+    right: -300px;
+    opacity: 0;
+  }
+  to {
+    right: 20px;
+    opacity: 1;
+  }
 }
 
 @keyframes slideOut {
-  from { right: 20px; opacity: 1; }
-  to { right: -300px; opacity: 0; }
+  from {
+    right: 20px;
+    opacity: 1;
+  }
+  to {
+    right: -300px;
+    opacity: 0;
+  }
 }

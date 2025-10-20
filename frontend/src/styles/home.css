@@ -11,4 +11,9 @@
 }
 
 /* small helpers */
-.line-divider { width: 8rem; height: 2px; background: #fff; margin: 0.5rem auto; }
+.line-divider {
+  width: 8rem;
+  height: 2px;
+  background: #fff;
+  margin: 0.5rem auto;
+}
