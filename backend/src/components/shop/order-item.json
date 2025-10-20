@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_shop_order_items",
+  "info": {
+    "displayName": "Order Item",
+    "icon": "gift"
+  },
+  "options": {},
+  "attributes": {
+    "quantity": {
+      "type": "integer",
+      "required": true,
+      "default": 1,
+      "min": 1
+    },
+    "product": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::product.product"
+    }
+  },
+  "config": {}
+}
