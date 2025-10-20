@@ -18,7 +18,8 @@ export default function App() {
   const location = useLocation();
 
   // Define which pages have dark backgrounds
-  const darkBackgroundPages = ['/checkout', '/orders', '/payment-success'];
+  // Note: checkout should use a light/nav-friendly background so navbar text is dark
+  const darkBackgroundPages = [ '/payment-success'];
   const isDarkPage = darkBackgroundPages.includes(location.pathname);
 
   // Handle scroll effect for navbar
