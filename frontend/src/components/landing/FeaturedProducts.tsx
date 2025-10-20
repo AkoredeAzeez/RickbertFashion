@@ -1,7 +1,14 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 
-export default function FeaturedProducts({ loading, products }) {
+interface FeaturedProductsProps {
+  loading: boolean
+  products: { _id: string; name: string; price: number; images: string[] }[]
+}
+
+export default function FeaturedProducts({
+  loading,
+  products,
+}: FeaturedProductsProps) {
   return (
     <section className='py-32 bg-white text-black relative overflow-hidden'>
       <div className='absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(0,0,0,0.02)_0%,transparent_50%)]' />

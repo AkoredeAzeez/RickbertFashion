@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
-import logo from '../assets/rf.jpg'
-import { fetchProducts } from '../actions/products.action'
+import { useState, useEffect, useRef } from 'react'
+import { useScroll, useTransform } from 'framer-motion'
+import logo from '@/assets/rf.jpg'
+import { fetchProducts } from '@/actions/products.action'
 
-import AnimatedCursor from '../components/landing/AnimatedCursor'
-import Hero from '../components/landing/Hero'
-import FeaturedProducts from '../components/landing/FeaturedProducts'
-import Philosophy from '../components/landing/Philosophy'
-import FooterMinimal from '../components/landing/FooterMinimal'
+import AnimatedCursor from '@/components/landing/AnimatedCursor'
+import Hero from '@/components/landing/Hero'
+import FeaturedProducts from '@/components/landing/FeaturedProducts'
+import Philosophy from '@/components/landing/Philosophy'
+import FooterMinimal from '@/components/landing/FooterMinimal'
+import { Product } from '@/types'
 
 export default function LandingPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [currentSlide, setCurrentSlide] = useState(0)
   const heroRef = useRef(null)
@@ -23,7 +24,7 @@ export default function LandingPage() {
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8])
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
     }
     window.addEventListener('mousemove', handleMouseMove)
@@ -34,13 +35,7 @@ export default function LandingPage() {
     const loadProducts = async () => {
       try {
         const res = await fetchProducts()
-        let productArray = []
-        if (Array.isArray(res)) {
-          productArray = res
-        } else if (res && Array.isArray(res.products)) {
-          productArray = res.products
-        }
-        setProducts(productArray)
+        setProducts(res)
         setLoading(false)
       } catch (error) {
         console.error('Failed to load products:', error)

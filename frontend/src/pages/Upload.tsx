@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { createProduct } from '../actions/products.action'
+import { createProduct } from '@/actions/products.action'
 
 const Upload = () => {
   const [name, setName] = useState('')
@@ -9,14 +9,16 @@ const Upload = () => {
   const [sizes, setSizes] = useState('')
   const [colors, setColors] = useState('')
   const [stock, setStock] = useState(0)
-  const [files, setFiles] = useState([])
-  const [previews, setPreviews] = useState([])
+  const [files, setFiles] = useState<File[]>([])
+  const [previews, setPreviews] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState({})
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {},
+  )
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const handleFilesChange = (e) => {
-    const selectedFiles = Array.from(e.target.files)
+  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || [])
     setFiles(selectedFiles)
 
     previews.forEach((url) => URL.revokeObjectURL(url))
@@ -25,7 +27,7 @@ const Upload = () => {
     setPreviews(previewUrls)
   }
 
-  const removeImage = (indexToRemove) => {
+  const removeImage = (indexToRemove: number) => {
     const newFiles = files.filter((_, index) => index !== indexToRemove)
     const newPreviews = previews.filter((_, index) => index !== indexToRemove)
 
@@ -35,7 +37,7 @@ const Upload = () => {
     setPreviews(newPreviews)
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!files.length) return
 

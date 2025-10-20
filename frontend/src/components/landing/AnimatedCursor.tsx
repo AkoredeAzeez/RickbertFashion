@@ -1,7 +1,10 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 
-export default function AnimatedCursor({ mousePosition }) {
+export default function AnimatedCursor({
+  mousePosition,
+}: {
+  mousePosition: { x: number; y: number }
+}) {
   return (
     <motion.div
       className='fixed w-4 h-4 bg-white rounded-full pointer-events-none z-50 mix-blend-difference'

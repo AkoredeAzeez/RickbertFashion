@@ -1,5 +1,17 @@
-import React from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, MotionValue } from 'framer-motion'
+
+interface HeroProps {
+  heroRef: React.RefObject<HTMLElement>
+  heroSlides: { gradient: string; title: string; subtitle: string }[]
+  currentSlide: number
+  isInView: boolean
+  yBg: string | MotionValue<string>
+  yText: string | MotionValue<string>
+  scale: number | MotionValue<number>
+  mousePosition: { x: number; y: number }
+  setCurrentSlide: (index: number) => void
+  logo: string
+}
 
 export default function Hero({
   heroRef,
@@ -12,7 +24,7 @@ export default function Hero({
   mousePosition,
   setCurrentSlide,
   logo,
-}) {
+}: HeroProps) {
   return (
     <motion.section
       ref={heroRef}
@@ -59,8 +71,8 @@ export default function Hero({
             rotate: Math.random() * 360,
           }}
           animate={{
-            y: [null, -50, null],
-            rotate: [null, 180, null],
+            y: [undefined, -50, undefined],
+            rotate: [undefined, 180, undefined],
             opacity: [0.2, 0.6, 0.2],
           }}
           transition={{

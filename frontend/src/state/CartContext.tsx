@@ -1,11 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
-import { Product } from '../types'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { Product } from '@/types'
 
 export interface CartItem extends Product {
   qty: number

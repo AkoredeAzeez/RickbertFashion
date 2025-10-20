@@ -1,7 +1,12 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 
-export default function OrderSummary({ cartLength, total }) {
+export default function OrderSummary({
+  cartLength,
+  total,
+}: {
+  cartLength: number
+  total: number
+}) {
   return (
     <motion.div
       className='lg:col-span-1'

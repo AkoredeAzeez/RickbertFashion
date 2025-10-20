@@ -1,5 +1,4 @@
-import React from 'react'
-import { CartItem } from '../../state/CartContext'
+import { CartItem } from '@/state/CartContext'
 
 interface OrderSummaryProps {
   cartItems: CartItem[]
