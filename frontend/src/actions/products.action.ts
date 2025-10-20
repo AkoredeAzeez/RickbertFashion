@@ -1,138 +1,43 @@
 import axios from 'axios'
-import { Product } from '../types'
+import { Product, StrapiCollectionResponse, StrapiResponse } from '../types'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dctdaad7d/image/upload'
 const UPLOAD_PRESET = 'rickbertfashion'
 
-const SAMPLE_PRODUCTS: Product[] = [
-  {
-    id: 1,
-    attributes: {
-      name: 'Classic Tee',
-      description: 'Comfortable cotton tee',
-      price: 2500,
-      images: {
-        data: [
-          {
-            id: 1,
-            attributes: {
-              url: '/assets/sample1.jpg',
-              name: 'sample1.jpg',
-              hash: 'sample1',
-              ext: '.jpg',
-              mime: 'image/jpeg',
-              size: 123,
-              width: 500,
-              height: 500,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              alternativeText: null,
-              caption: null,
-              formats: null,
-              previewUrl: null,
-              provider: 'local',
-            },
-          },
-        ],
-        meta: { pagination: { page: 1, pageSize: 1, pageCount: 1, total: 1 } },
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      publishedAt: new Date().toISOString(),
-    },
-  },
-  {
-    id: 2,
-    attributes: {
-      name: 'Denim Jacket',
-      description: 'Stylish denim jacket',
-      price: 12000,
-      images: {
-        data: [
-          {
-            id: 2,
-            attributes: {
-              url: '/assets/sample2.jpg',
-              name: 'sample2.jpg',
-              hash: 'sample2',
-              ext: '.jpg',
-              mime: 'image/jpeg',
-              size: 123,
-              width: 500,
-              height: 500,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              alternativeText: null,
-              caption: null,
-              formats: null,
-              previewUrl: null,
-              provider: 'local',
-            },
-          },
-        ],
-        meta: { pagination: { page: 1, pageSize: 1, pageCount: 1, total: 1 } },
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      publishedAt: new Date().toISOString(),
-    },
-  },
-  {
-    id: 3,
-    attributes: {
-      name: 'Sneakers',
-      description: 'Sporty sneakers',
-      price: 8000,
-      images: {
-        data: [
-          {
-            id: 3,
-            attributes: {
-              url: '/assets/sample3.jpg',
-              name: 'sample3.jpg',
-              hash: 'sample3',
-              ext: '.jpg',
-              mime: 'image/jpeg',
-              size: 123,
-              width: 500,
-              height: 500,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              alternativeText: null,
-              caption: null,
-              formats: null,
-              previewUrl: null,
-              provider: 'local',
-            },
-          },
-        ],
-        meta: { pagination: { page: 1, pageSize: 1, pageCount: 1, total: 1 } },
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      publishedAt: new Date().toISOString(),
-    },
-  },
-]
-
 export async function fetchProducts(): Promise<Product[]> {
-  // simulate network latency
-  await new Promise((r) => setTimeout(r, 120))
-  // In a real app, you'd fetch from `${API_URL}/api/products`
-  return SAMPLE_PRODUCTS
+  try {
+    const response = await axios.get<StrapiCollectionResponse<Product>>(
+      `${BACKEND_URL}/api/products?populate=*`,
+    )
+    return response.data.data
+  } catch (err: any) {
+    console.error('Error fetching products:', err.message)
+    return []
+  }
 }
 
 export async function fetchProduct(id: string): Promise<Product | undefined> {
-  await new Promise((r) => setTimeout(r, 80))
-  return SAMPLE_PRODUCTS.find((p) => p.id === Number(id))
+  try {
+    const response = await axios.get<StrapiResponse<Product>>(
+      `${BACKEND_URL}/api/products/${id}?populate=*`,
+    )
+    return response.data.data
+  } catch (err: any) {
+    console.error(`Error fetching product ${id}:`, err.message)
+    return undefined
+  }
 }
 
-export async function deleteProduct(id: number): Promise<{ success: true }> {
-  await new Promise((r) => setTimeout(r, 80))
-  // In a real app, you'd make a DELETE request to `${API_URL}/api/products/${id}`
-  console.log(`Deleted product ${id}`)
-  return { success: true }
+export async function deleteProduct(id: number): Promise<{ success: boolean }> {
+  try {
+    await axios.delete(`${BACKEND_URL}/api/products/${id}`)
+    console.log(`Deleted product ${id}`)
+    return { success: true }
+  } catch (err: any) {
+    console.error(`Error deleting product ${id}:`, err.message)
+    return { success: false }
+  }
 }
 
 export interface CreateProductData {
@@ -144,6 +49,10 @@ export interface CreateProductData {
   stock: number
 }
 
+// Note: This function uploads images to Cloudinary and saves the URLs.
+// This is not the standard Strapi way of handling media uploads, which typically
+// involves uploading directly to the Strapi media library. This might require
+// a custom backend implementation to correctly handle image URLs.
 export async function createProduct(
   productData: CreateProductData,
   files: File[],
@@ -177,7 +86,7 @@ export async function createProduct(
   }
 
   const productRes = await axios.post<{ data: Product }>(
-    `${API_URL}/api/products`,
+    `${BACKEND_URL}/api/products`,
     { data: product },
   )
   return productRes.data.data
