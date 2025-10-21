@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchProducts } from "../lib/api";
+import { fetchProducts } from '@/actions/products.action'
 import { useCart } from "../state/CartContext";
 import HomeHero from "../components/home/HomeHero";
 import ProductGrid from "../components/home/ProductGrid";
