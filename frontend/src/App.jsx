@@ -4,13 +4,11 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
-import Upload from "./pages/Upload";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess"; 
 import { CartProvider } from "./state/CartContext";
 import { ToastProvider } from './state/ToastContext'
-import Orders from "./pages/Orders";
 import LandingPage from "./pages/LandingPage";
 
 export default function App() {
@@ -52,8 +50,7 @@ export default function App() {
     { to: "/home", label: "Shop" },
     { to: "/cart", label: "Cart" },
     { to: "/checkout", label: "Checkout" },
-    { to: "/upload", label: "Upload" },
-    { to: "/orders", label: "Orders" }
+    // admin-only pages removed from public nav
   ];
 
   // Determine text color based on scroll state and page background
@@ -268,16 +265,7 @@ export default function App() {
                 <PaymentSuccess />
               </div>
             } />
-            <Route path="/upload" element={
-              <div className="pt-20">
-                <Upload />
-              </div>
-            } />
-            <Route path="/orders" element={
-              <div className="pt-20">
-                <Orders />
-              </div>
-            } />
+            {/* admin-only routes removed */}
           </Routes>
         </main>
 
