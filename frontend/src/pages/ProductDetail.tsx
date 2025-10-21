@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { fetchProduct } from '@/actions/products.action'
 import { useCart } from '@/state/CartContext'
+import { useToast } from '@/state/ToastContext'
 import { Product } from '@/types'
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const [p, setP] = useState<Product | null>(null)
   const { addItem } = useCart()
+  const { show } = useToast()
 
   useEffect(() => {
     if (id) {
@@ -39,7 +41,10 @@ export default function ProductDetail() {
           ₦{p.price.toLocaleString()}
         </div>
         <button
-          onClick={() => addItem(p, 1)}
+          onClick={() => {
+            addItem(p, 1)
+            try { show('Successfully added to cart') } catch (e) {}
+          }}
           className='mt-6 px-5 py-3 rounded-xl bg-black text-white hover:opacity-90'
         >
           Add to cart

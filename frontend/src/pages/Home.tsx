@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchProducts, deleteProduct } from '@/actions/products.action'
 import { useCart } from '@/state/CartContext'
+import { useToast } from '@/state/ToastContext'
 import HomeHero from '@/components/home/HomeHero'
 import ProductGrid from '@/components/home/ProductGrid'
 import FloatingCartButton from '@/components/home/FloatingCartButton'
@@ -13,6 +14,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const { addItem } = useCart()
+  const { show } = useToast()
 
   useEffect(() => {
     loadProducts()
@@ -44,6 +46,7 @@ export default function Home() {
 
   const handleAddToCart = (product: Product) => {
     addItem(product, 1)
+    try { show('Successfully added to cart') } catch (e) {}
   }
 
   const filteredProducts = products
