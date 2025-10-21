@@ -90,13 +90,27 @@ export default function LandingPage() {
         logo={logo}
       />
 
+      {/* Resolve product image URLs safely across Strapi shapes */}
       <FeaturedProducts
         loading={loading}
         products={products.map((p) => ({
           _id: p.id.toString(),
           name: p.name,
           price: p.price,
-          images: p.images.data.map((img) => img.url),
+          images: ((): string[] => {
+            const anyP: any = p
+            // prefer data wrapper, otherwise assume array
+            const imgs = anyP.images?.data ?? anyP.images ?? []
+            if (!Array.isArray(imgs)) return []
+            return imgs
+              .map((img: any) =>
+                img?.attributes?.url ||
+                img?.attributes?.formats?.medium?.url ||
+                img?.url ||
+                null,
+              )
+              .filter(Boolean)
+          })(),
         }))}
       />
 
