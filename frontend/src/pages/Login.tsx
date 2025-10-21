@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { mockLogin, mockRegister } from '@/actions/auth.action'
+import { mergeCartWithServer } from '../actions/cart.action'
+import { useCart } from '../state/CartContext'
 
 export default function Login() {
+  const { cart, mergeWithRemote } = useCart()
   const [mode, setMode] = useState<'login'|'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -13,12 +16,19 @@ export default function Login() {
     setLoading(true)
     setError('')
     try {
+      let userId = ''
       if (mode === 'login') {
-        await mockLogin(email, password)
+        const res = await mockLogin(email, password)
+        userId = res.userId
       } else {
-        await mockRegister(email, password)
+        const res = await mockRegister(email, password)
+        userId = res.userId
       }
-      // redirect or show success (replace with real logic)
+      // Call server merge cart API
+      if (userId) {
+        const mergedCart = await mergeCartWithServer(userId, cart)
+        if (mergeWithRemote) mergeWithRemote(mergedCart)
+      }
       window.location.href = '/checkout'
     } catch (err: any) {
       setError(err.message || 'Login failed')
