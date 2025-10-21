@@ -9,6 +9,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const show = (message: string) => {
+    console.debug('[Toast] show()', message)
     const t: Toast = { id: Date.now().toString(), message }
     setToasts((s) => [...s, t])
     // auto remove after 3s
@@ -17,13 +18,23 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }, 3000)
   }
 
+  // Expose a helper for manual testing in the browser console
+  useEffect(() => {
+    // @ts-ignore
+    window.__rb_show_toast = show
+    return () => {
+      // @ts-ignore
+      delete window.__rb_show_toast
+    }
+  }, [])
+
   return (
     <ToastCtx.Provider value={{ show }}>
       {children}
       {/* Toast container via portal to document.body so it sits above app overlays */}
       {typeof document !== 'undefined' &&
         createPortal(
-          <div aria-live='polite' className='fixed top-6 right-6 z-[9999] pointer-events-auto'>
+          <div aria-live='polite' className='fixed top-6 right-6 z-[99999] pointer-events-auto'>
             <div className='flex flex-col gap-3'>
               {toasts.map((t) => (
                 <div
