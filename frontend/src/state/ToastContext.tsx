@@ -34,7 +34,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {/* Toast container via portal to document.body so it sits above app overlays */}
       {typeof document !== 'undefined' &&
         createPortal(
-          <div aria-live='polite' className='fixed top-6 right-6 z-[99999] pointer-events-auto'>
+          <div aria-live='polite' className='fixed top-6 right-6 z-[9999] pointer-events-auto'>
             <div className='flex flex-col gap-3'>
               {toasts.map((t) => (
                 <div
