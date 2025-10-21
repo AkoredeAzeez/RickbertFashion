@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { fetchProduct } from '@/actions/products.action'
+import { fetchProduct, imageUrlBuilder } from '@/actions/products.action'
 import { useCart } from '@/state/CartContext'
 import { useToast } from '@/state/ToastContext'
 import { Product } from '@/types'
@@ -25,7 +25,27 @@ export default function ProductDetail() {
 
   if (!p) return <div>Loading...</div>
 
-  const imageUrl = p.images?.data?.[0]?.url || '/placeholder.png'
+  const resolveImageUrl = (product: Product) => {
+    try {
+      const anyP: any = product
+      const firstFromData = anyP.images?.data?.[0]
+      const firstArray = anyP.images && !anyP.images.data ? anyP.images[0] : null
+      const candidate = firstFromData || firstArray || null
+
+      const urlFromCandidate =
+        candidate?.attributes?.url ||
+        candidate?.attributes?.formats?.medium?.url ||
+        candidate?.url ||
+        null
+
+      if (urlFromCandidate) return imageUrlBuilder(urlFromCandidate)
+      return '/placeholder.png'
+    } catch (e) {
+      return '/placeholder.png'
+    }
+  }
+
+  const imageUrl = resolveImageUrl(p)
 
   return (
     <div className='grid md:grid-cols-2 gap-8'>

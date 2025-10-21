@@ -10,7 +10,32 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, index, onAdd }: ProductCardProps) {
-  const imageUrl = imageUrlBuilder(product.images[0]?.url) || '/placeholder.png'
+  const resolveImageUrl = (product: Product) => {
+    try {
+      // Support multiple shapes returned by Strapi depending on populate calls:
+      // - product.images?.data?.[0]?.attributes?.url
+      // - product.images?.[0]?.url
+      // - product.images?.[0]?.attributes?.formats?.medium?.url
+      const anyP = product as any
+
+      const firstFromData = anyP.images?.data?.[0]
+      const firstArray = anyP.images && !anyP.images.data ? anyP.images[0] : null
+      const candidate = firstFromData || firstArray || null
+
+      const urlFromCandidate =
+        candidate?.attributes?.url ||
+        candidate?.attributes?.formats?.medium?.url ||
+        candidate?.url ||
+        null
+
+      if (urlFromCandidate) return imageUrlBuilder(urlFromCandidate)
+      return '/placeholder.png'
+    } catch (e) {
+      return '/placeholder.png'
+    }
+  }
+
+  const imageUrl = resolveImageUrl(product)
   const [open, setOpen] = useState(false)
   const backdropRef = useRef<HTMLDivElement | null>(null)
 
