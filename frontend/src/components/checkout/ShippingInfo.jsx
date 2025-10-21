@@ -1,7 +1,3 @@
-cd frontend
-rm -rf node_modules
-npm install
-npm run build
 import React from 'react';
 
 export default function ShippingInfo({ formData, errors, handleChange }) {
