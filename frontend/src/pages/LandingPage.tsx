@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useScroll, useTransform } from 'framer-motion'
 import logo from '@/assets/rf.jpg'
-import { fetchProducts } from '@/actions/products.action'
+import { fetchProducts, imageUrlBuilder } from '@/actions/products.action'
 
 import AnimatedCursor from '@/components/landing/AnimatedCursor'
 import Hero from '@/components/landing/Hero'
@@ -103,13 +103,15 @@ export default function LandingPage() {
             const imgs = anyP.images?.data ?? anyP.images ?? []
             if (!Array.isArray(imgs)) return []
             return imgs
-              .map((img: any) =>
-                img?.attributes?.url ||
-                img?.attributes?.formats?.medium?.url ||
-                img?.url ||
-                null,
-              )
-              .filter(Boolean)
+              .map((img: any) => {
+                const url =
+                  img?.attributes?.url ||
+                  img?.attributes?.formats?.medium?.url ||
+                  img?.url ||
+                  null
+                return url ? imageUrlBuilder(url) : null
+              })
+              .filter((u): u is string => typeof u === 'string')
           })(),
         }))}
       />
