@@ -10,6 +10,7 @@ import PaymentSuccess from './pages/PaymentSuccess'
 import { CartProvider } from './state/CartContext'
 import Orders from './pages/Orders'
 import LandingPage from './pages/LandingPage'
+import ToastProvider from './state/ToastContext'
 
 export default function App() {
   const [isNavOpen, setIsNavOpen] = useState(false)

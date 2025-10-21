@@ -34,10 +34,9 @@ export default function Home() {
     }
   }
 
-
   const handleAddToCart = (product: Product) => {
     addItem(product, 1)
-    show('Successfully added to cart')
+    show(`Successfully added ${product.name} to cart`)
   }
 
   const filteredProducts = products
