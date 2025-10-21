@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { imageUrlBuilder } from '@/actions/products.action'
 
 interface FeaturedProductsProps {
   loading: boolean
@@ -66,12 +67,27 @@ export default function FeaturedProducts({
                 <div className='relative aspect-[4/5] md:aspect-[3/4] overflow-hidden mb-6 md:mb-8 bg-stone-50 shadow-lg'>
                   <motion.img
                     src={
-                      product.images?.[0] ||
-                      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=800&fit=crop'
+                      (() => {
+                        const raw = product.images?.[0]
+                        const fallback =
+                          'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=800&fit=crop'
+                        if (!raw) return fallback
+                        try {
+                          // If already absolute, use as-is; otherwise build absolute URL
+                          return raw.startsWith('http') ? raw : imageUrlBuilder(raw)
+                        } catch (e) {
+                          return fallback
+                        }
+                      })()
                     }
                     alt={product.name}
                     className='w-full h-full object-cover transition-all duration-1000 group-hover:scale-105'
                     loading='lazy'
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement
+                      target.onerror = null
+                      target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=800&fit=crop'
+                    }}
                   />
                   <motion.div className='absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 md:from-black/50' />
                   <motion.div
