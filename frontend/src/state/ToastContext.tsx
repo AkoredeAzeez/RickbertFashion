@@ -20,8 +20,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastCtx.Provider value={{ show }}>
       {children}
 
-      {/* Toast container */}
-      <div aria-live='polite' className='fixed top-6 right-6 z-50'>
+  {/* Toast container */}
+  <div aria-live='polite' className='fixed top-6 right-6 z-[9999] pointer-events-auto'>
         <div className='flex flex-col gap-3'>
           {toasts.map((t) => (
             <div
