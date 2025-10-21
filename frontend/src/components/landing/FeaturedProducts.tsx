@@ -3,7 +3,8 @@ import { imageUrlBuilder } from '@/actions/products.action'
 
 interface FeaturedProductsProps {
   loading: boolean
-  products: { _id: string; name: string; price: number; images: string[] }[]
+  // images can be many shapes from Strapi (string[], {data: [...]}, array of objects, etc.)
+  products: { _id: string; name: string; price: number; images: any }[]
 }
 
 export default function FeaturedProducts({
@@ -66,20 +67,36 @@ export default function FeaturedProducts({
               >
                 <div className='relative aspect-[4/5] md:aspect-[3/4] overflow-hidden mb-6 md:mb-8 bg-stone-50 shadow-lg'>
                   <motion.img
-                    src={
-                      (() => {
-                        const raw = product.images?.[0]
-                        const fallback =
-                          'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=800&fit=crop'
-                        if (!raw) return fallback
-                        try {
-                          // If already absolute, use as-is; otherwise build absolute URL
+                    src={(() => {
+                      // Resolve images that may be strings or Strapi shapes (data wrapper or array)
+                      try {
+                        const imgs = product.images
+
+                        // If it's an array of strings (already mapped), use first
+                        if (Array.isArray(imgs) && typeof imgs[0] === 'string') {
+                          const raw = imgs[0]
+                          if (!raw) return '/placeholder.png'
                           return raw.startsWith('http') ? raw : imageUrlBuilder(raw)
-                        } catch (e) {
-                          return fallback
                         }
-                      })()
-                    }
+
+                        // If it's the Strapi shape (with data) or array of objects, mimic ProductCard logic
+                        const anyP: any = { images: imgs }
+                        const firstFromData = anyP.images?.data?.[0]
+                        const firstArray = anyP.images && !anyP.images.data ? anyP.images[0] : null
+                        const candidate = firstFromData || firstArray || null
+
+                        const urlFromCandidate =
+                          candidate?.attributes?.url ||
+                          candidate?.attributes?.formats?.medium?.url ||
+                          candidate?.url ||
+                          null
+
+                        if (urlFromCandidate) return imageUrlBuilder(urlFromCandidate)
+                        return '/placeholder.png'
+                      } catch (e) {
+                        return '/placeholder.png'
+                      }
+                    })()}
                     alt={product.name}
                     className='w-full h-full object-cover transition-all duration-1000 group-hover:scale-105'
                     loading='lazy'
