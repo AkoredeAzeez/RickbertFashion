@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 type Toast = { id: string; message: string }
 
@@ -19,21 +20,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastCtx.Provider value={{ show }}>
       {children}
-
-  {/* Toast container */}
-  <div aria-live='polite' className='fixed top-6 right-6 z-[9999] pointer-events-auto'>
-        <div className='flex flex-col gap-3'>
-          {toasts.map((t) => (
-            <div
-              key={t.id}
-              className='notification bg-green-600 text-white px-5 py-3 rounded-lg shadow-lg font-semibold'
-              style={{ minWidth: 220 }}
-            >
-              {t.message}
+      {/* Toast container via portal to document.body so it sits above app overlays */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <div aria-live='polite' className='fixed top-6 right-6 z-[9999] pointer-events-auto'>
+            <div className='flex flex-col gap-3'>
+              {toasts.map((t) => (
+                <div
+                  key={t.id}
+                  className='notification bg-green-600 text-white px-5 py-3 rounded-lg shadow-lg font-semibold'
+                  style={{ minWidth: 220 }}
+                >
+                  {t.message}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>,
+          document.body,
+        )}
     </ToastCtx.Provider>
   )
 }
