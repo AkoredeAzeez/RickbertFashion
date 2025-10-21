@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchProducts, deleteProduct } from '@/actions/products.action'
+import { fetchProducts } from '@/actions/products.action'
 import { useCart } from '@/state/CartContext'
 import { useToast } from '@/state/ToastContext'
 import HomeHero from '@/components/home/HomeHero'
@@ -34,15 +34,6 @@ export default function Home() {
     }
   }
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return
-    try {
-      await deleteProduct(id)
-      loadProducts()
-    } catch (err) {
-      console.error('Failed to delete product', err)
-    }
-  }
 
   const handleAddToCart = (product: Product) => {
     addItem(product, 1)
@@ -126,7 +117,6 @@ export default function Home() {
           products={filteredProducts}
           loading={loading}
           onAdd={handleAddToCart}
-          onDelete={handleDelete}
         />
       </div>
     </div>

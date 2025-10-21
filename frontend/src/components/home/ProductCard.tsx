@@ -6,15 +6,9 @@ interface ProductCardProps {
   product: Product
   index: number
   onAdd: (product: Product) => void
-  onDelete: (id: number) => void
 }
 
-export default function ProductCard({
-  product,
-  index,
-  onAdd,
-  onDelete,
-}: ProductCardProps) {
+export default function ProductCard({ product, index, onAdd }: ProductCardProps) {
   const imageUrl = imageUrlBuilder(product.images[0]?.url) || '/placeholder.png'
 
   return (
@@ -61,14 +55,6 @@ export default function ProductCard({
             className='flex-1 bg-black text-white py-3 px-4 text-sm font-light tracking-wide uppercase hover:bg-stone-800 transition-colors duration-300'
           >
             Add to Cart
-          </button>
-
-          <button
-            onClick={() => onDelete(product.id)}
-            className='px-4 py-3 border border-red-200 text-red-600 hover:bg-red-50 transition-colors duration-300 text-sm'
-            title='Delete Product'
-          >
-            Delete
           </button>
         </div>
       </div>

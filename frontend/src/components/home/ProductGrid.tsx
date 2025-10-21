@@ -5,14 +5,12 @@ interface ProductGridProps {
   products: Product[]
   loading: boolean
   onAdd: (product: Product) => void
-  onDelete: (id: number) => void
 }
 
 export default function ProductGrid({
   products,
   loading,
   onAdd,
-  onDelete,
 }: ProductGridProps) {
   if (loading) {
     return (
@@ -31,7 +29,6 @@ export default function ProductGrid({
             product={product}
             index={index}
             onAdd={onAdd}
-            onDelete={onDelete}
           />
         ))
       ) : (
