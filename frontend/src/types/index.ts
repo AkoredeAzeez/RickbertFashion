@@ -100,8 +100,20 @@ export interface OrderAttributes {
   publishedAt: string | null
 }
 
+// Based on plugin::users-permissions.user
+export interface UserAttributes {
+  username: string
+  email: string
+  provider: string
+  confirmed: boolean
+  blocked: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 // --- Fully Typed Content Types ---
 
 export type Product = StrapiDataItem<ProductAttributes>
 export type Order = StrapiDataItem<OrderAttributes>
 export type Media = StrapiDataItem<MediaAttributes>
+export type User = StrapiDataItem<UserAttributes>

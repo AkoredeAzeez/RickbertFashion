@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { mockLogin, mockRegister } from '@/actions/auth.action'
-import { mergeCartWithServer } from '../actions/cart.action'
+import { login, register } from '@/actions/auth.action'
 import { useCart } from '../state/CartContext'
+import { useToast } from '@/state/ToastContext'
 
 export default function Login() {
-  const { cart, mergeWithRemote } = useCart()
-  const [mode, setMode] = useState<'login'|'register'>('login')
+  const { attachUser } = useCart()
+  const { show } = useToast()
+  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -16,22 +18,24 @@ export default function Login() {
     setLoading(true)
     setError('')
     try {
-      let userId = ''
+      let auth
       if (mode === 'login') {
-        const res = await mockLogin(email, password)
-        userId = res.userId
+        auth = await login(email, password)
       } else {
-        const res = await mockRegister(email, password)
-        userId = res.userId
+        auth = await register(username, email, password)
       }
-      // Call server merge cart API
-      if (userId) {
-        const mergedCart = await mergeCartWithServer(userId, cart)
-        if (mergeWithRemote) mergeWithRemote(mergedCart)
+
+      if (auth && auth.user && attachUser) {
+        attachUser(String(auth.user.id), true)
+        show(`Welcome, ${auth.user.username}!`)
       }
       window.location.href = '/checkout'
     } catch (err: any) {
-      setError(err.message || 'Login failed')
+      const message =
+        err?.response?.data?.error?.message ||
+        err.message ||
+        'Login/Registration failed'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -39,14 +43,33 @@ export default function Login() {
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-stone-50'>
-      <form onSubmit={handleSubmit} className='bg-white p-8 rounded shadow-md w-full max-w-md'>
-        <h2 className='text-2xl font-bold mb-6'>{mode === 'login' ? 'Login' : 'Register'}</h2>
+      <form
+        onSubmit={handleSubmit}
+        className='bg-white p-8 rounded shadow-md w-full max-w-md'
+      >
+        <h2 className='text-2xl font-bold mb-6'>
+          {mode === 'login' ? 'Login' : 'Register'}
+        </h2>
+
+        {mode === 'register' && (
+          <div className='mb-4'>
+            <input
+              type='text'
+              placeholder='Username'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className='w-full px-4 py-2 border rounded'
+              required
+            />
+          </div>
+        )}
+
         <div className='mb-4'>
           <input
             type='email'
             placeholder='Email'
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             className='w-full px-4 py-2 border rounded'
             required
           />
@@ -56,7 +79,7 @@ export default function Login() {
             type='password'
             placeholder='Password'
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             className='w-full px-4 py-2 border rounded'
             required
           />
@@ -67,7 +90,11 @@ export default function Login() {
           className='w-full bg-black text-white py-2 rounded font-semibold disabled:opacity-50'
           disabled={loading}
         >
-          {loading ? 'Please wait...' : mode === 'login' ? 'Login' : 'Register'}
+          {loading
+            ? 'Please wait...'
+            : mode === 'login'
+            ? 'Login'
+            : 'Register'}
         </button>
         <div className='mt-4 text-center'>
           <button
@@ -75,7 +102,9 @@ export default function Login() {
             className='text-blue-600 underline text-sm'
             onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
           >
-            {mode === 'login' ? 'Create an account' : 'Already have an account? Login'}
+            {mode === 'login'
+              ? 'Create an account'
+              : 'Already have an account? Login'}
           </button>
         </div>
       </form>
