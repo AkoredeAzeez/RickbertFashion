@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { fetchMyOrders } from '@/actions/orders.action'
-import { getAuth } from '@/actions/auth.action'
 import { Order } from '@/types'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/state/AuthContext'

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { login, register } from '@/actions/auth.action'
 import { useCart } from '../state/CartContext'
 import { useToast } from '@/state/ToastContext'
+import { useAuth } from '@/state/AuthContext'
 
 export default function Login() {
   const { attachUser } = useCart()
@@ -12,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const { login: loginUser } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,11 +27,19 @@ export default function Login() {
         auth = await register(username, email, password)
       }
 
-      if (auth && auth.user && attachUser) {
-        attachUser(String(auth.user.id), true)
-        show(`Welcome, ${auth.user.username}!`)
+      if (!auth || !auth.user) {
+        throw new Error('Authentication failed: No user data received')
       }
-      window.location.href = '/checkout'
+
+      loginUser(auth)
+      show(`Welcome, ${auth.user.username}!`)
+
+      if (attachUser) {
+        attachUser(String(auth.user.id), true)
+        window.location.href = '/checkout'
+      } else {
+        window.location.href = '/home'
+      }
     } catch (err: any) {
       const message =
         err?.response?.data?.error?.message ||
@@ -90,11 +100,7 @@ export default function Login() {
           className='w-full bg-black text-white py-2 rounded font-semibold disabled:opacity-50'
           disabled={loading}
         >
-          {loading
-            ? 'Please wait...'
-            : mode === 'login'
-            ? 'Login'
-            : 'Register'}
+          {loading ? 'Please wait...' : mode === 'login' ? 'Login' : 'Register'}
         </button>
         <div className='mt-4 text-center'>
           <button

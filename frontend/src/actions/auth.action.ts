@@ -2,7 +2,7 @@ import axios from 'axios'
 import { User } from '../types'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
-const AUTH_KEY = 'rickbert-auth'
+export const AUTH_KEY = 'rickbert-auth'
 
 export interface Auth {
   jwt: string

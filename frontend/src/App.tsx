@@ -11,14 +11,15 @@ import LandingPage from './pages/LandingPage'
 import { useToast } from './state/ToastContext'
 import Login from './pages/Login'
 import TrackOrders from './pages/TrackOrders'
-import { getAuth, logout, Auth } from './actions/auth.action'
+import { logout } from './actions/auth.action'
+import { useAuth } from './state/AuthContext'
 
 export default function App() {
   const [isNavOpen, setIsNavOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const [auth, setAuth] = useState<Auth | null>(null)
+  const { auth } = useAuth()
   const { show } = useToast()
   const [newsletterEmail, setNewsletterEmail] = useState('')
 
@@ -29,10 +30,6 @@ export default function App() {
       setNewsletterEmail('')
     }
   }
-
-  useEffect(() => {
-    setAuth(getAuth())
-  }, [])
 
   // Define which pages have dark backgrounds
   // Note: checkout should use a light/nav-friendly background so navbar text is dark
@@ -66,7 +63,6 @@ export default function App() {
 
   const handleLogout = () => {
     logout()
-    setAuth(null)
     setIsNavOpen(false)
     navigate('/')
   }

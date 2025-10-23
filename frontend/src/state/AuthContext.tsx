@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { Auth, getAuth } from '../actions/auth.action'
+import { Auth, AUTH_KEY, getAuth } from '@/actions/auth.action'
 
 interface AuthContextType {
   auth: Auth | null
@@ -18,9 +18,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const auth = getAuth()
-    if (auth) {
-      setAuth(auth)
-    }
+    if (auth) setAuth(auth)
   }, [])
 
   const login = (auth: Auth) => {
@@ -28,6 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const logout = () => {
+    localStorage.removeItem(AUTH_KEY)
     setAuth(null)
   }
 
