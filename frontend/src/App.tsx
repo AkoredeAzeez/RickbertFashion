@@ -51,8 +51,7 @@ export default function App() {
     { to: '/home', label: 'Shop' },
     { to: '/cart', label: 'Cart' },
     { to: '/checkout', label: 'Checkout' },
-    { to: '/upload', label: 'Upload' },
-    { to: '/orders', label: 'Orders' },
+    // admin-only pages removed from public nav
   ]
 
   // Determine text color based on scroll state and page background
@@ -150,7 +149,9 @@ export default function App() {
                         <motion.div
                           className='w-6 h-0.5 bg-current origin-center transition-transform duration-300'
                           animate={
-                            isNavOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }
+                            isNavOpen
+                              ? { rotate: 45, y: 6 }
+                              : { rotate: 0, y: 0 }
                           }
                         />
                         <motion.div
@@ -294,22 +295,7 @@ export default function App() {
                   </div>
                 }
               />
-              <Route
-                path='/upload'
-                element={
-                  <div className='pt-20'>
-                    <Upload />
-                  </div>
-                }
-              />
-              <Route
-                path='/orders'
-                element={
-                  <div className='pt-20'>
-                    <Orders />
-                  </div>
-                }
-              />
+              {/* admin-only routes removed */}
             </Routes>
           </main>
 
@@ -322,7 +308,8 @@ export default function App() {
                   <motion.h3
                     className='text-2xl font-thin tracking-wider mb-6'
                     style={{
-                      fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+                      fontFamily:
+                        "'Inter', system-ui, -apple-system, sans-serif",
                     }}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
