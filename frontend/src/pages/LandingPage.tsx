@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useScroll, useTransform } from 'framer-motion'
 import logo from '@/assets/rf.jpg'
-import { fetchProducts, imageUrlBuilder } from '@/actions/products.action'
+import { fetchProducts } from '@/actions/products.action'
+import { useCart } from '@/state/CartContext'
+import { useToast } from '@/state/ToastContext'
 
 import AnimatedCursor from '@/components/landing/AnimatedCursor'
 import Hero from '@/components/landing/Hero'
@@ -17,6 +19,13 @@ export default function LandingPage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const heroRef = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll()
+  const { addItem } = useCart()
+  const { show } = useToast()
+
+  const handleAddToCart = (product: Product) => {
+    addItem(product, 1)
+    show(`Added ${product.name} to cart`)
+  }
 
   // Advanced parallax effects
   const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '50%'])
@@ -90,30 +99,10 @@ export default function LandingPage() {
         logo={logo}
       />
 
-      {/* Resolve product image URLs safely across Strapi shapes */}
       <FeaturedProducts
         loading={loading}
-        products={products.map((p) => ({
-          _id: p.id.toString(),
-          name: p.name,
-          price: p.price,
-          images: ((): string[] => {
-            const anyP: any = p
-            // prefer data wrapper, otherwise assume array
-            const imgs = anyP.images?.data ?? anyP.images ?? []
-            if (!Array.isArray(imgs)) return []
-            return imgs
-              .map((img: any) => {
-                const url =
-                  img?.attributes?.url ||
-                  img?.attributes?.formats?.medium?.url ||
-                  img?.url ||
-                  null
-                return url ? imageUrlBuilder(url) : null
-              })
-              .filter((u): u is string => typeof u === 'string')
-          })(),
-        }))}
+        products={products}
+        onAddToCart={handleAddToCart}
       />
 
       <Philosophy />

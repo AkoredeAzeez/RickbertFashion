@@ -1,15 +1,36 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { imageUrlBuilder } from '@/actions/products.action'
+import { Product } from '@/types'
 
 interface FeaturedProductsProps {
   loading: boolean
-  // images can be many shapes from Strapi (string[], {data: [...]}, array of objects, etc.)
-  products: { _id: string; name: string; price: number; images: any }[]
+  products: Product[]
+  onAddToCart: (product: Product) => void
+}
+
+const resolveImageUrl = (product: Product) => {
+  try {
+    const anyP = product as any
+    const firstFromData = anyP.images?.data?.[0]
+    const firstArray = anyP.images && !anyP.images.data ? anyP.images[0] : null
+    const candidate = firstFromData || firstArray || null
+    const urlFromCandidate =
+      candidate?.attributes?.url ||
+      candidate?.attributes?.formats?.medium?.url ||
+      candidate?.url ||
+      null
+    if (urlFromCandidate) return imageUrlBuilder(urlFromCandidate)
+    return '/placeholder.png'
+  } catch (e) {
+    return '/placeholder.png'
+  }
 }
 
 export default function FeaturedProducts({
   loading,
   products,
+  onAddToCart,
 }: FeaturedProductsProps) {
   return (
     <section className='py-32 bg-white text-black relative overflow-hidden'>
@@ -57,7 +78,7 @@ export default function FeaturedProducts({
           >
             {products.slice(0, 3).map((product, index) => (
               <motion.div
-                key={product._id}
+                key={product.id}
                 className='group relative'
                 initial={{ opacity: 0, y: 80 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -67,43 +88,15 @@ export default function FeaturedProducts({
               >
                 <div className='relative aspect-[4/5] md:aspect-[3/4] overflow-hidden mb-6 md:mb-8 bg-stone-50 shadow-lg'>
                   <motion.img
-                    src={(() => {
-                      // Resolve images that may be strings or Strapi shapes (data wrapper or array)
-                      try {
-                        const imgs = product.images
-
-                        // If it's an array of strings (already mapped), use first
-                        if (Array.isArray(imgs) && typeof imgs[0] === 'string') {
-                          const raw = imgs[0]
-                          if (!raw) return '/placeholder.png'
-                          return raw.startsWith('http') ? raw : imageUrlBuilder(raw)
-                        }
-
-                        // If it's the Strapi shape (with data) or array of objects, mimic ProductCard logic
-                        const anyP: any = { images: imgs }
-                        const firstFromData = anyP.images?.data?.[0]
-                        const firstArray = anyP.images && !anyP.images.data ? anyP.images[0] : null
-                        const candidate = firstFromData || firstArray || null
-
-                        const urlFromCandidate =
-                          candidate?.attributes?.url ||
-                          candidate?.attributes?.formats?.medium?.url ||
-                          candidate?.url ||
-                          null
-
-                        if (urlFromCandidate) return imageUrlBuilder(urlFromCandidate)
-                        return '/placeholder.png'
-                      } catch (e) {
-                        return '/placeholder.png'
-                      }
-                    })()}
+                    src={resolveImageUrl(product)}
                     alt={product.name}
                     className='w-full h-full object-cover transition-all duration-1000 group-hover:scale-105'
                     loading='lazy'
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement
                       target.onerror = null
-                      target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=800&fit=crop'
+                      target.src =
+                        'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=800&fit=crop'
                     }}
                   />
                   <motion.div className='absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 md:from-black/50' />
@@ -121,16 +114,25 @@ export default function FeaturedProducts({
                     whileInView={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.7 + index * 0.1 }}
                   >
-                    <button className='w-full bg-white/90 backdrop-blur-sm text-black py-3 text-sm font-light tracking-wide uppercase transition-all duration-300 hover:bg-white'>
+                    <Link
+                      to={`/product/${product.id}`}
+                      className='w-full bg-white/90 backdrop-blur-sm text-black py-3 text-sm font-light tracking-wide uppercase transition-all duration-300 hover:bg-white text-center block'
+                    >
                       Quick View
-                    </button>
+                    </Link>
                   </motion.div>
                   <motion.div className='hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500'>
                     <div className='space-y-4'>
-                      <button className='block w-full bg-white text-black px-8 py-3 text-sm font-light tracking-wide uppercase transition-all duration-300 hover:bg-black hover:text-white'>
+                      <Link
+                        to={`/product/${product.id}`}
+                        className='block w-full bg-white text-black px-8 py-3 text-sm font-light tracking-wide uppercase transition-all duration-300 hover:bg-black hover:text-white'
+                      >
                         View Details
-                      </button>
-                      <button className='block w-full border border-white text-white px-8 py-3 text-sm font-light tracking-wide uppercase transition-all duration-300 hover:bg-white hover:text-black'>
+                      </Link>
+                      <button
+                        onClick={() => onAddToCart(product)}
+                        className='block w-full border border-white text-white px-8 py-3 text-sm font-light tracking-wide uppercase transition-all duration-300 hover:bg-white hover:text-black'
+                      >
                         Add to Cart
                       </button>
                     </div>

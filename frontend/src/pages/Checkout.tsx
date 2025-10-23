@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import ProgressStepper from '@/components/checkout/ProgressStepper'
@@ -12,10 +12,12 @@ import '@/styles/checkout.css'
 import { fadeUp, cardVariant, headerVariant } from '@/styles/animations'
 import { initiatePayment, CheckoutFormData } from '@/actions/checkout.action'
 import { useCart } from '@/state/CartContext'
+import { useAuth } from '@/state/AuthContext'
 
 const Checkout = () => {
   const navigate = useNavigate()
   const { cart, total } = useCart()
+  const { auth } = useAuth()
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState<CheckoutFormData>({
@@ -26,6 +28,12 @@ const Checkout = () => {
     city: '',
     state: '',
   })
+
+  useEffect(() => {
+    if (auth) {
+      setFormData((prev) => ({ ...prev, email: auth.user.email }))
+    }
+  }, [auth])
   const [errors, setErrors] = useState<Partial<CheckoutFormData>>({})
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
