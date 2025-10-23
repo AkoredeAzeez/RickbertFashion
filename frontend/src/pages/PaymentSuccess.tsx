@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { verifyPayment } from '@/actions/checkout.action'
-import { Order } from '@/types'
+import { useCart } from '@/state/CartContext'
+import { Order, OrderItemComponent } from '@/types'
 import '@/styles/payment-success.css'
 
 const PaymentSuccess = () => {
@@ -9,6 +10,7 @@ const PaymentSuccess = () => {
   const navigate = useNavigate()
   const [order, setOrder] = useState<Order | null>(null)
   const [showNotification, setShowNotification] = useState(false)
+  const { clearCart } = useCart()
 
   const searchParams = new URLSearchParams(location.search)
   const reference = searchParams.get('reference') || searchParams.get('trxref')
@@ -24,37 +26,30 @@ const PaymentSuccess = () => {
       try {
         const verifiedOrder = await verifyPayment(reference)
         setOrder(verifiedOrder)
+        clearCart()
 
         const {
-          attributes: {
-            customerName,
-            customerEmail,
-            customerPhone,
-            shippingAddress,
-            items,
-            total,
-          },
+          customerName,
+          customerEmail,
+          customerPhone,
+          shippingAddress,
+          items,
+          total,
         } = verifiedOrder
-        const message = `
-New Order 🚀
-Name: ${customerName}
-Email: ${customerEmail}
-Phone: ${customerPhone}
-Address: ${shippingAddress.street}, ${shippingAddress.city}, ${
-          shippingAddress.state
-        }
-Total: ₦${total}
-
-Items:
-${items
-  .map(
-    (item) =>
-      `- ${item.product.data.name} x${item.quantity} = ₦${
-        item.product.data.price * item.quantity
-      }`,
-  )
-  .join('\n')}
-        `
+        const formatOrderItem = (item: OrderItemComponent): string =>
+          `- ${item.product.data.name} x${item.quantity} = ₦${
+            item.product.data.price * item.quantity
+          }`
+        const message = [
+          `New Order 🚀`,
+          `Name: ${customerName}`,
+          `Email: ${customerEmail}`,
+          `Phone: ${customerPhone}`,
+          `Address: ${shippingAddress.street}, ${shippingAddress.city}, ${shippingAddress.state}`,
+          `Total: ₦${total}`,
+          `Items:
+${items.map(formatOrderItem).join('\n')}`,
+        ].join('\n')
         const whatsappNumber = '2349043045934'
         const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
           message,
@@ -71,7 +66,7 @@ ${items
     }
 
     handlePaymentSuccess()
-  }, [reference, navigate])
+  }, [reference, navigate, clearCart])
 
   if (!order) return <p>Processing your payment...</p>
 
