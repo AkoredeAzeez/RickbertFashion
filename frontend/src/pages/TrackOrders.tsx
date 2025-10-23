@@ -4,12 +4,14 @@ import { fetchMyOrders } from '@/actions/orders.action'
 import { getAuth } from '@/actions/auth.action'
 import { Order } from '@/types'
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/state/AuthContext'
 
 export default function TrackOrders() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const auth = useMemo(() => getAuth(), [])
+  const { auth } = useAuth()
+  const [email, setEmail] = useState('')
 
   useEffect(() => {
     async function fetchUserOrders() {
@@ -18,7 +20,8 @@ export default function TrackOrders() {
         setLoading(false)
         return
       }
-      setLoading(true)
+
+      setEmail(auth.user.email)
       try {
         const result = await fetchMyOrders()
         setOrders(result)
