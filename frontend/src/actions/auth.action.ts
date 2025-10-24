@@ -60,7 +60,3 @@ export async function register(
   localStorage.setItem(AUTH_KEY, JSON.stringify(auth))
   return auth
 }
-
-export function logout() {
-  localStorage.removeItem(AUTH_KEY)
-}

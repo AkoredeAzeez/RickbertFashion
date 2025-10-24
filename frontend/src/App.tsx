@@ -11,7 +11,6 @@ import LandingPage from './pages/LandingPage'
 import { useToast } from './state/ToastContext'
 import Login from './pages/Login'
 import TrackOrders from './pages/TrackOrders'
-import { logout } from './actions/auth.action'
 import { useAuth } from './state/AuthContext'
 
 export default function App() {
@@ -19,7 +18,7 @@ export default function App() {
   const [isScrolled, setIsScrolled] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const { auth } = useAuth()
+  const { auth, logout } = useAuth()
   const { show } = useToast()
   const [newsletterEmail, setNewsletterEmail] = useState('')
 
