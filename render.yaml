@@ -1,0 +1,59 @@
+# Exported from Render on 2025-11-21T09:18:39Z
+version: "1"
+ungrouped:
+  services:
+    - type: web
+      name: RickbertFashion
+      runtime: node
+      repo: https://github.com/AkoredeAzeez/RickbertFashion
+      plan: free
+      envVars:
+        - key: SUPABASE_DIRECTORY
+          sync: false
+        - key: SUPABASE_BUCKET
+          sync: false
+        - key: SUPABASE_API_KEY
+          sync: false
+        - key: SUPABASE_API_URL
+          sync: false
+        - key: JWT_SECRET
+          sync: false
+        - key: DATABASE_FILENAME
+          sync: false
+        - key: DATABASE_SSL
+          sync: false
+        - key: DATABASE_PASSWORD
+          sync: false
+        - key: DATABASE_USERNAME
+          sync: false
+        - key: DATABASE_NAME
+          sync: false
+        - key: DATABASE_PORT
+          sync: false
+        - key: DATABASE_HOST
+          sync: false
+        - key: DATABASE_CLIENT
+          sync: false
+        - key: ENCRYPTION_KEY
+          sync: false
+        - key: TRANSFER_TOKEN_SALT
+          sync: false
+        - key: ADMIN_JWT_SECRET
+          sync: false
+        - key: API_TOKEN_SALT
+          sync: false
+        - key: APP_KEYS
+          sync: false
+        - key: PORT
+          sync: false
+        - key: HOST
+          sync: false
+        - fromGroup: Strapi
+      region: frankfurt
+      buildCommand: pnpm install && pnpm run build
+      startCommand: pnpm start
+      autoDeployTrigger: commit
+      buildFilter:
+        ignoredPaths:
+          - frontend/**
+      rootDir: backend
