@@ -48,7 +48,6 @@ ungrouped:
           sync: false
         - key: HOST
           sync: false
-        - fromGroup: Strapi
       region: frankfurt
       buildCommand: pnpm install && pnpm run build
       startCommand: pnpm start
